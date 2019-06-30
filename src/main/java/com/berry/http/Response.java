@@ -5,6 +5,7 @@ import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.ResponseBody;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 
 /**
@@ -35,9 +36,9 @@ public class Response {
         this.contentType = contentType;
     }
 
-    static Response create(okhttp3.Response response) {
-        if (response == null) {
-            return new Response(-1, null, null, null, null, null, "null response");
+    static Response create(okhttp3.Response response, @Nullable String errorMsg) {
+        if (response == null || StringUtils.isNoneBlank(errorMsg)) {
+            return new Response(-1, null, null, null, null, null, errorMsg);
         }
         ResponseBody body = response.body();
         byte[] bodyArr = new byte[0];
