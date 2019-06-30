@@ -32,3 +32,5 @@ pylog
 /__pycache__/
 script/**/__pycache__/
 .DS_Store
+
+build
