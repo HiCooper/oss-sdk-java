@@ -22,6 +22,11 @@ public final class Constants {
 
     public static final String DEFAULT_MIME = "application/octet-stream";
 
+    /**
+     * access_token 负载信息长度 3
+     */
+    public static final int ENCODE_DATA_LENGTH = 3;
+
 
     /**
      * 所有都是UTF-8编码
