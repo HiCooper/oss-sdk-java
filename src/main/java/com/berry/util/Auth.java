@@ -88,7 +88,7 @@ public final class Auth {
         String token = auth.uploadToken(3600, "192.168.2.194");
         System.out.println("access_token:"+token);
 
-        StringMap authorization = auth.authorization("/ajax/bucket/file/create");
+        StringMap authorization = auth.authorization("/ajax/bucket/list.json");
         System.out.println("oss_sdk_authorization:"+authorization.get(OSS_SDK_AUTH_HEAD_NAME));
     }
 

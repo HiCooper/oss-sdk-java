@@ -29,18 +29,21 @@ public final class BucketManage {
 
     public void queryBucket(@Nullable String bucketName) {
         String url = String.format("%s%s", config.defaultHost(), UrlFactory.BucketUr.list.getUrl());
+        System.out.println("request:" + url);
         Response response;
         StringMap params = new StringMap();
-        params.put("bucket", bucketName);
-        response = HttpClient.get(url, params, null);
+        params.putNotNull("bucket", bucketName);
+        response = get(url, params.size() > 1 ? params : null);
         if (response.isSuccessful()) {
             System.out.println(response.bodyString());
+        } else {
+            System.out.println(response.getCode());
         }
     }
 
-    private Response get(String url) {
+    private Response get(String url, StringMap params) {
         StringMap header = auth.authorization(url);
-        return HttpClient.get(url, header);
+        return HttpClient.get(url, params, header);
     }
 
     private Response post(String url, byte[] body) {
