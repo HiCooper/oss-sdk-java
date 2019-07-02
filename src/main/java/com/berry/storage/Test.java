@@ -1,6 +1,5 @@
 package com.berry.storage;
 
-import com.berry.util.Auth;
 
 /**
  * Created with IntelliJ IDEA.
@@ -12,10 +11,4 @@ import com.berry.util.Auth;
  */
 public class Test {
 
-    public static void main(String[] args) throws IllegalAccessException {
-        // 生成 token
-        Auth auth = Auth.create("yRdQE7hybEfPD5Kgt4fXCe", "wkZ2RvEnuom/Pa4RTQGmPdFVd6g7/CO");
-        String token = auth.accessToken(3600);
-        System.out.println(token);
-    }
 }
