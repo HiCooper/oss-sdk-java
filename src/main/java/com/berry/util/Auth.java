@@ -86,10 +86,10 @@ public final class Auth {
         // 生成 token
         Auth auth = Auth.create("yRdQE7hybEfPD5Kgt4fXCe", "wkZ2RvEnuom/Pa4RTQGmPdFVd6g7/CO");
         String token = auth.uploadToken(3600, "192.168.2.194");
-        System.out.println(token);
+        System.out.println("access_token:"+token);
 
         StringMap authorization = auth.authorization("/ajax/bucket/file/create");
-        System.out.println(authorization.get(OSS_SDK_AUTH_HEAD_NAME));
+        System.out.println("oss_sdk_authorization:"+authorization.get(OSS_SDK_AUTH_HEAD_NAME));
     }
 
     /**
