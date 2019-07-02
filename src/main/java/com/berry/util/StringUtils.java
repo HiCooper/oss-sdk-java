@@ -19,7 +19,7 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
      * @param paramsMap map
      * @return urlStr
      */
-    public static String parseUrlParams(Map<String, Object> paramsMap) {
+    public static String parseUrlParams(StringMap paramsMap) {
         List<Map.Entry<String, Object>> infoIds = new ArrayList<>(paramsMap.entrySet());
         infoIds.sort(Comparator.comparing(Map.Entry::getKey));
         // 构造URL 键值对的格式

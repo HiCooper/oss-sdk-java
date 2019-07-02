@@ -78,6 +78,10 @@ public final class StringMap {
         return map.keySet();
     }
 
+    public Set<Map.Entry<String, Object>> entrySet() {
+        return map.entrySet();
+    }
+
     public String formString() {
         final StringBuilder b = new StringBuilder();
         forEach(new Consumer() {

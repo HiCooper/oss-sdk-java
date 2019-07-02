@@ -1,7 +1,8 @@
 package com.berry;
 
-import com.berry.http.HttpClient;
-import com.berry.http.Response;
+import com.berry.storage.BucketManage;
+import com.berry.util.Auth;
+import org.junit.Test;
 
 /**
  * Created with IntelliJ IDEA.
@@ -14,12 +15,9 @@ import com.berry.http.Response;
 public class HttpClientTest {
 
 
-    public static void main(String[] args) {
-        Response response = HttpClient.get("http://www.baidu.com");
-        if (response.isSuccessful()) {
-            System.out.println(response.bodyString());
-        } else {
-            System.out.println("请求错误");
-        }
+    @Test
+    public void BucketManageTest() {
+        BucketManage bucketManage = new BucketManage(Auth.create("yRdQE7hybEfPD5Kgt4fXCe", "wkZ2RvEnuom/Pa4RTQGmPdFVd6g7/CO"));
+        bucketManage.queryBucket(null);
     }
 }

@@ -6,9 +6,9 @@ package com.berry.storage;
  *
  * @author Berry_Cooper.
  * @date 2019-06-30 18:30
- * fileName：Test
+ * fileName：ObjectManage
  * Use：
  */
-public class Test {
+public class ObjectManage {
 
 }

@@ -1,5 +1,7 @@
 package com.berry.http;
 
+import com.berry.common.Constants;
+import com.berry.util.Json;
 import com.berry.util.StringUtils;
 import okhttp3.Headers;
 import okhttp3.MediaType;
@@ -77,6 +79,18 @@ public class Response {
 
     public String bodyString() {
         return StringUtils.utf8String(body);
+    }
+
+    public <T> T jsonToObject(Class<T> clazz) {
+        if (!isJson()) {
+            return null;
+        }
+        String b = bodyString();
+        return Json.decode(b, clazz);
+    }
+
+    public boolean isJson() {
+        return this.contentType.equals(Constants.JSON_MIME);
     }
 
     public int getCode() {
