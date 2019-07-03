@@ -149,7 +149,7 @@ public final class BucketManage {
             }
             logger.error("request error, code:{}, msg:{}", result.getCode(), result.getMsg());
         } else {
-            logger.error("request error, code:{}, msg:{}", response.getCode(), response.getError());
+            logger.error("request error, code:{}, msg:{}, error:{}", response.getCode(), response.getMessage(), response.getError());
         }
         return false;
     }

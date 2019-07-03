@@ -105,7 +105,7 @@ public final class StringMap {
     }
 
     public String jsonString() {
-        return JSON.toJSONString(this);
+        return Json.encode(this);
     }
 
     public interface Consumer {
