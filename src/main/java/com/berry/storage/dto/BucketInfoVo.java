@@ -2,8 +2,6 @@ package com.berry.storage.dto;
 
 import lombok.Data;
 
-import java.time.LocalDateTime;
-
 /**
  * Title BucketInfoVo
  * Description
@@ -37,10 +35,10 @@ public class BucketInfoVo {
     /**
      * 创建时间
      */
-    private LocalDateTime createTime;
+    private String createTime;
 
     /**
      * 更新时间
      */
-    private LocalDateTime updateTime;
+    private String updateTime;
 }

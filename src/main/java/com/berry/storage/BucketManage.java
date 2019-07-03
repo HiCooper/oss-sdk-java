@@ -1,14 +1,26 @@
 package com.berry.storage;
 
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.berry.common.Constants;
+import com.berry.common.OssException;
 import com.berry.http.HttpClient;
 import com.berry.http.Response;
+import com.berry.storage.dto.BucketInfoVo;
+import com.berry.storage.dto.Result;
 import com.berry.storage.url.UrlFactory;
 import com.berry.util.Auth;
+import com.berry.util.Json;
 import com.berry.util.StringMap;
+import com.berry.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -20,6 +32,8 @@ import javax.annotation.Nullable;
  */
 public final class BucketManage {
 
+    private static final Logger logger = LoggerFactory.getLogger(BucketManage.class);
+
     private final Auth auth;
     private final Config config = new Config();
 
@@ -27,18 +41,117 @@ public final class BucketManage {
         this.auth = auth;
     }
 
-    public void queryBucket(@Nullable String bucketName) {
+    /**
+     * 获取 bucket 列表，
+     *
+     * @param bucketName bucketName 可空
+     * @return 列表
+     */
+    public List<BucketInfoVo> queryBucket(@Nullable String bucketName) {
         String url = String.format("%s%s", config.defaultHost(), UrlFactory.BucketUr.list.getUrl());
-        System.out.println("request:" + url);
-        Response response;
         StringMap params = new StringMap();
-        params.putNotNull("bucket", bucketName);
-        response = get(url, params.size() > 1 ? params : null);
+        params.putNotNull("name", bucketName);
+        Response response = get(url, params.size() > 1 ? params : null);
         if (response.isSuccessful()) {
-            System.out.println(response.bodyString());
+            Result result = response.jsonToObject(Result.class);
+            if (!result.getCode().equals(Constants.API_SUCCESS_CODE) || !result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
+                logger.error(result.getMsg());
+                return null;
+            }
+            List<BucketInfoVo> vos = new ArrayList<>();
+            JSONArray array = JSONArray.parseArray(JSON.toJSONString(result.getData()));
+            BucketInfoVo vo;
+            for (int i = 0; i < array.size(); i++) {
+                JSONObject o = array.getJSONObject(i);
+                vo = Json.decode(JSON.toJSONString(o), BucketInfoVo.class);
+                vos.add(vo);
+            }
+            return vos;
         } else {
-            System.out.println(response.getCode());
+            logger.error(response.getCode() + "," + response.getError());
         }
+        return null;
+    }
+
+    /**
+     * 创建 bucket
+     *
+     * @param name   名称
+     * @param region 区域
+     * @param acl    ACL 权限,为空时 默认私有
+     * @return true or false
+     */
+    public Boolean createBucket(String name, String region, @Nullable String acl) {
+        if (StringUtils.isAnyBlank(name, region)) {
+            throw new IllegalArgumentException("name and region cannot be blank!");
+        }
+        StringMap params = new StringMap();
+        params.put("name", name);
+        params.put("region", region);
+        if (StringUtils.isNotBlank(acl)) {
+            // 验证acl 规范
+            if (!Constants.AclType.ALL_NAME.contains(acl)) {
+                throw new OssException(403, "illegal acl");
+            }
+            params.put("acl", acl);
+        }
+        String url = String.format("%s%s", config.defaultHost(), UrlFactory.BucketUr.new_create_bucket.getUrl());
+        return getResult(url, params);
+    }
+
+    /**
+     * 更新 bucket acl
+     *
+     * @param bucket bucket name
+     * @param acl    acl
+     * @return true or false
+     */
+    public Boolean updateAcl(String bucket, String acl) {
+        if (StringUtils.isAnyBlank(bucket, acl)) {
+            throw new IllegalArgumentException("bucket and acl cannot be blank!");
+        }
+        String url = String.format("%s%s", config.defaultHost(), UrlFactory.BucketUr.set_acl.getUrl());
+        StringMap params = new StringMap();
+        params.put("bucket", bucket);
+        params.put("acl", acl);
+        return getResult(url, params);
+    }
+
+    /**
+     * 删除 bucket
+     *
+     * @param bucket bucket name
+     * @return true or false
+     */
+    public Boolean delete(String bucket) {
+        if (StringUtils.isBlank(bucket)) {
+            throw new IllegalArgumentException("bucket cannot be blank!");
+        }
+        String url = String.format("%s%s", config.defaultHost(), UrlFactory.BucketUr.delete_bucket.getUrl());
+        StringMap params = new StringMap();
+        params.put("bucket", bucket);
+        return getResult(url, params);
+    }
+
+    /**
+     * 获取 boolean 响应
+     *
+     * @param url    url
+     * @param params 参数
+     * @return true or false
+     */
+    private Boolean getResult(String url, StringMap params) {
+        Response response = post(url, StringUtils.utf8Bytes(params.jsonString()));
+        if (response.isSuccessful()) {
+            Result result = response.jsonToObject(Result.class);
+            if (result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
+                return true;
+            }
+            logger.error("request error, code:{}, msg:{}", result.getCode(), result.getMsg());
+        } else {
+            logger.error("request error, code:{}, msg:{}", response.getCode(), response.getError());
+        }
+        return false;
     }
 
     private Response get(String url, StringMap params) {
@@ -47,7 +160,8 @@ public final class BucketManage {
     }
 
     private Response post(String url, byte[] body) {
-        StringMap header = auth.authorization(url, body, Constants.FORM_MIME);
-        return HttpClient.post(url, body, header, Constants.FORM_MIME);
+        System.out.println("request url:" + url);
+        StringMap header = auth.authorization(url, body, Constants.JSON_MIME);
+        return HttpClient.post(url, body, header);
     }
 }

@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static com.berry.common.Constants.DEFAULT_MIME;
+import static com.berry.common.Constants.JSON_MIME;
 
 /**
  * Title HttpClient
@@ -130,17 +131,17 @@ public class HttpClient {
     }
 
     /**
-     * 请求体为 字符串， 默认媒体类型-二进制流
+     * 请求体为 字符串， 默认媒体类型-JSON
      */
     public static Response post(String url, String body, StringMap header) {
-        return post(url, StringUtils.utf8Bytes(body), header, DEFAULT_MIME);
+        return post(url, StringUtils.utf8Bytes(body), header, JSON_MIME);
     }
 
     /**
-     * 请求体为 字节数组，默认媒体类型-二进制流
+     * 请求体为 字节数组，默认媒体类型-JSON
      */
     public static Response post(String url, byte[] body, StringMap header) {
-        return post(url, body, header, DEFAULT_MIME);
+        return post(url, body, header, JSON_MIME);
     }
 
     /**
