@@ -132,12 +132,6 @@ public class HttpClient {
         return post(url, fb.build(), headers);
     }
 
-    public static Response postJson(String url, StringMap data, StringMap header) {
-        Gson gson = new GsonBuilder().enableComplexMapKeySerialization().create();
-        RequestBody requestBody = RequestBody.create(MediaType.get("application/json;charset=UTF-8"), gson.toJson(data));
-        return post(url, requestBody, header);
-    }
-
     /**
      * 请求体为 字符串， 默认媒体类型-JSON
      */
