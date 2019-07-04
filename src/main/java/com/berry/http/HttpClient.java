@@ -124,12 +124,18 @@ public class HttpClient {
      * @param headers 请求头 map
      * @return 响应
      */
-    public static Response post(String url, StringMap params, StringMap headers) {
+    public static Response postForm(String url, StringMap params, StringMap headers) {
         final FormBody.Builder fb = new FormBody.Builder();
         for (Map.Entry<String, Object> entry : params.entrySet()) {
             fb.add(entry.getKey(), entry.getValue().toString());
         }
         return post(url, fb.build(), headers);
+    }
+
+    public static Response postJson(String url, StringMap data, StringMap header) {
+        Gson gson = new GsonBuilder().enableComplexMapKeySerialization().create();
+        RequestBody requestBody = RequestBody.create(MediaType.get("application/json;charset=UTF-8"), gson.toJson(data));
+        return post(url, requestBody, header);
     }
 
     /**
