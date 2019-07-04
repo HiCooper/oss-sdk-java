@@ -5,7 +5,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.berry.common.Constants;
-import com.berry.common.OssException;
 import com.berry.http.HttpClient;
 import com.berry.http.Response;
 import com.berry.storage.dto.BucketInfoVo;
@@ -54,8 +53,8 @@ public final class BucketManage {
         Response response = get(url, params.size() > 1 ? params : null);
         if (response.isSuccessful()) {
             Result result = response.jsonToObject(Result.class);
-            if (!result.getCode().equals(Constants.API_SUCCESS_CODE) || !result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
-                logger.error(result.getMsg());
+            if (result == null || !result.getCode().equals(Constants.API_SUCCESS_CODE) || !result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
+                logger.error(result == null ? "empty result" : result.getMsg());
                 return null;
             }
             List<BucketInfoVo> vos = new ArrayList<>();
@@ -85,7 +84,7 @@ public final class BucketManage {
         if (StringUtils.isAnyBlank(name, region)) {
             throw new IllegalArgumentException("name and region cannot be blank!");
         }
-        if (!name.matches(Constants.BUCKET_NAME_PATTERN)){
+        if (!name.matches(Constants.BUCKET_NAME_PATTERN)) {
             throw new IllegalArgumentException("bucket name illegal 只允许小写字母、数字、中划线（-），且不能以短横线开头或结尾,长度3-63");
         }
         StringMap params = new StringMap();
