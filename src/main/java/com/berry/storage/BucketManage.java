@@ -85,13 +85,16 @@ public final class BucketManage {
         if (StringUtils.isAnyBlank(name, region)) {
             throw new IllegalArgumentException("name and region cannot be blank!");
         }
+        if (!name.matches(Constants.BUCKET_NAME_PATTERN)){
+            throw new IllegalArgumentException("bucket name illegal 只允许小写字母、数字、中划线（-），且不能以短横线开头或结尾,长度3-63");
+        }
         StringMap params = new StringMap();
         params.put("name", name);
         params.put("region", region);
         if (StringUtils.isNotBlank(acl)) {
             // 验证acl 规范
             if (!Constants.AclType.ALL_NAME.contains(acl)) {
-                throw new OssException(403, "illegal acl");
+                throw new IllegalArgumentException("illegal acl enum [PRIVATE, PUBLIC_READ, PUBLIC_READ_WRITE]");
             }
             params.put("acl", acl);
         }
@@ -141,16 +144,13 @@ public final class BucketManage {
      * @return true or false
      */
     private Boolean getResult(String url, StringMap params) {
+        System.out.println(params.jsonString());
         Response response = post(url, StringUtils.utf8Bytes(params.jsonString()));
-        if (response.isSuccessful()) {
-            Result result = response.jsonToObject(Result.class);
-            if (result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
-                return true;
-            }
-            logger.error("request error, code:{}, msg:{}", result.getCode(), result.getMsg());
-        } else {
-            logger.error("request error, code:{}, msg:{}, error:{}", response.getCode(), response.getMessage(), response.getError());
+        Result result = response.jsonToObject(Result.class);
+        if (result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
+            return true;
         }
+        logger.error("request error, code:{}, msg:{}", result.getCode(), result.getMsg());
         return false;
     }
 

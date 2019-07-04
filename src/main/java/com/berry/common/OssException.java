@@ -1,6 +1,7 @@
 package com.berry.common;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * Created with IntelliJ IDEA.
@@ -10,6 +11,7 @@ import lombok.Data;
  * fileName：OssException
  * Use：
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 public class OssException extends RuntimeException {
 

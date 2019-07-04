@@ -1,8 +1,11 @@
 package com.berry.http;
 
 import com.berry.common.Constants;
+import com.berry.common.OssException;
 import com.berry.util.StringMap;
 import com.berry.util.StringUtils;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import okhttp3.*;
 import okhttp3.internal.annotations.EverythingIsNonNull;
 
@@ -12,7 +15,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static com.berry.common.Constants.DEFAULT_MIME;
 import static com.berry.common.Constants.JSON_MIME;
 
 /**
@@ -328,6 +330,9 @@ public class HttpClient {
         okhttp3.Response response = null;
         try {
             response = CLIENT.newCall(requestBuilder.build()).execute();
+            if (!response.isSuccessful()) {
+                throw new OssException(response.code(), response.message());
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

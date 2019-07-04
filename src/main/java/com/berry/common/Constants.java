@@ -2,6 +2,7 @@ package com.berry.common;
 
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.regex.Pattern;
 
 /**
  * Application constants.
@@ -14,13 +15,21 @@ public final class Constants {
     }
 
     /**
+     * 规则：
+     * 1、只允许小写字母、数字、中划线（-），且不能以短横线开头或结尾
+     * 2、3-63 个字符
+     * 3. 不允许使用保留关键字，
+     */
+    public static final String BUCKET_NAME_PATTERN = "^[a-z0-9][a-z0-9_\\-]{1,61}[a-z0-9]$";
+
+    /**
      * 版本号
      */
     public static final String VERSION = "1.0.0";
 
-    public static final String DEFAULT_HOST = "192.168.0.109:8077";
+    public static final String DEFAULT_HOST = "192.168.2.194:8077";
 
-    public static final String JSON_MIME = "application/json";
+    public static final String JSON_MIME = "application/json;charset=UTF-8";
 
     public static final String FORM_MIME = "application/x-www-form-urlencoded";
 
@@ -29,11 +38,6 @@ public final class Constants {
     public static final String  API_SUCCESS_CODE = "200";
 
     public static final String  API_SUCCESS_MSG = "SUCCESS";
-
-    /**
-     * access_token 负载信息长度 3
-     */
-    public static final int ENCODE_DATA_LENGTH = 3;
 
 
     /**
