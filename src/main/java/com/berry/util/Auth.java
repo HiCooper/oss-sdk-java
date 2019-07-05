@@ -29,7 +29,7 @@ public final class Auth {
 
     private static final String MAC_ALGORITHM = "HmacSHA1";
     private static final String OSS_SDK_AUTH_HEAD_NAME = "oss_sdk_authorization";
-    private static final String SDK_REQUEST_TOKEN_START = "OSS-";
+    private static final String SDK_REQUEST_TOKEN_PREFIX = "OSS-";
 
     private final String accessKeyId;
     private final SecretKeySpec secretKeySpec;
@@ -49,7 +49,7 @@ public final class Auth {
     }
 
     public StringMap authorization(String url, byte[] body, String contentType) {
-        String authorization = SDK_REQUEST_TOKEN_START + signRequest(url, body, contentType);
+        String authorization = SDK_REQUEST_TOKEN_PREFIX + signRequest(url, body, contentType);
         return new StringMap().put(OSS_SDK_AUTH_HEAD_NAME, authorization);
     }
 
@@ -80,16 +80,6 @@ public final class Auth {
 
         // 3.拼接 accessKeyId encodedSign 和 encodeJson，用英文冒号隔开
         return this.accessKeyId + ":" + encodedSign + ":" + encodeJson;
-    }
-
-    public static void main(String[] args) {
-        // 生成 token
-        Auth auth = Auth.create("yRdQE7hybEfPD5Kgt4fXCe", "wkZ2RvEnuom/Pa4RTQGmPdFVd6g7/CO");
-        String token = auth.uploadToken(3600, "192.168.2.194");
-        System.out.println("access_token:"+token);
-
-        StringMap authorization = auth.authorization("/ajax/bucket/list.json");
-        System.out.println("oss_sdk_authorization:"+authorization.get(OSS_SDK_AUTH_HEAD_NAME));
     }
 
     /**

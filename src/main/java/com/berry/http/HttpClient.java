@@ -61,7 +61,7 @@ public class HttpClient {
      */
     private static final int CONNECTION_POOL_MAX_IDLE_MINUTES = 5;
 
-    public static final String APPLICATION_JSON_UTF8_VALUE = "application/json;charset=UTF-8";
+    private static final String APPLICATION_JSON_UTF8_VALUE = "application/json;charset=UTF-8";
 
 
     static {

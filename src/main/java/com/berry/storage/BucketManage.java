@@ -143,7 +143,6 @@ public final class BucketManage {
      * @return true or false
      */
     private Boolean getResult(String url, StringMap params) {
-        System.out.println(params.jsonString());
         Response response = post(url, StringUtils.utf8Bytes(params.jsonString()));
         Result result = response.jsonToObject(Result.class);
         if (result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
@@ -161,6 +160,7 @@ public final class BucketManage {
     private Response post(String url, byte[] body) {
         System.out.println("request url:" + url);
         StringMap header = auth.authorization(url, body, Constants.JSON_MIME);
+        System.out.println(header.jsonString());
         return HttpClient.post(url, body, header);
     }
 }
