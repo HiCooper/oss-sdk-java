@@ -61,6 +61,9 @@ public class HttpClient {
      */
     private static final int CONNECTION_POOL_MAX_IDLE_MINUTES = 5;
 
+    public static final String APPLICATION_JSON_UTF8_VALUE = "application/json;charset=UTF-8";
+
+
     static {
         Dispatcher dispatcher = new Dispatcher();
         dispatcher.setMaxRequests(DISPATCHER_MAX_REQUESTS);
@@ -130,6 +133,20 @@ public class HttpClient {
             fb.add(entry.getKey(), entry.getValue().toString());
         }
         return post(url, fb.build(), headers);
+    }
+
+    /**
+     * Json 请求 （application/json;charset=UTF-8）
+     *
+     * @param url
+     * @param params
+     * @param headers
+     * @return
+     */
+    public static Response postJson(String url, StringMap params, StringMap headers) {
+        Gson gson = new GsonBuilder().enableComplexMapKeySerialization().create();
+        RequestBody requestBody = RequestBody.create(MediaType.get(APPLICATION_JSON_UTF8_VALUE), gson.toJson(params));
+        return post(url, requestBody, headers);
     }
 
     /**
