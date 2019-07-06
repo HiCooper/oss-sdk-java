@@ -37,6 +37,8 @@ public final class Constants {
 
     public static final String FORM_MIME = "application/x-www-form-urlencoded";
 
+    public static final String MULTIPART_MIME = "multipart/form-data";
+
     public static final String DEFAULT_MIME = "application/octet-stream";
 
     public static final String  API_SUCCESS_CODE = "200";

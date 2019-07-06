@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import static com.berry.common.Constants.JSON_MIME;
+import static com.berry.common.Constants.*;
 
 /**
  * Title HttpClient
