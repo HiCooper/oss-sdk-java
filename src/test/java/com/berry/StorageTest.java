@@ -2,10 +2,12 @@ package com.berry;
 
 import com.alibaba.fastjson.JSON;
 import com.berry.storage.BucketManage;
+import com.berry.storage.ObjectManage;
 import com.berry.storage.dto.BucketInfoVo;
 import com.berry.util.Auth;
 import org.junit.Test;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -24,17 +26,41 @@ public class StorageTest {
     private static final String accessKeyId = "UmAWuGv6aC5pE7bQ6il8wO";
     private static final String accessKeySecret = "URbe6TvfdF5XhEeRXiB7yewYcU5PFEe";
     private final BucketManage bucketManage = new BucketManage(Auth.create(accessKeyId, accessKeySecret));
+    private final ObjectManage objectManage = new ObjectManage(Auth.create(accessKeyId, accessKeySecret));
 
     @Test
-    public void BucketListTest() {
+    public void listBucketTest() {
         List<BucketInfoVo> bucketInfoVos = bucketManage.queryBucket(null);
         System.out.println(JSON.toJSONString(bucketInfoVos));
     }
 
     @Test
-    public void BucketCreateTest() {
+    public void createBucketTest() {
         Boolean result = bucketManage.createBucket("hello", "oss-shanghai-1", null);
         System.out.println(result);
+    }
+
+    @Test
+    public void setBucketAclTest() {
+        Boolean result = bucketManage.updateAcl("hello", "PUBLIC_READ");
+        System.out.println(result);
+    }
+
+    @Test
+    public void deleteBucketTest() {
+        Boolean result = bucketManage.delete("hello");
+        System.out.println(result);
+    }
+
+
+    @Test
+    public void createObjectTest() {
+        File file = new File("./demo.png");
+        if (file.isFile() && file.exists()) {
+            objectManage.upload("cooper", "PUBLIC_READ", null, new File("./demo.png"));
+        } else {
+            System.out.println("file not exist");
+        }
     }
 
 }
