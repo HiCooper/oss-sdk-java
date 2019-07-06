@@ -74,7 +74,7 @@ public class StorageTest {
     public void getObjectTest() throws IOException {
         byte[] data = objectManage.getObject("cooper", "demo.png");
         if (data != null) {
-            FileOutputStream outputStream = new FileOutputStream(new File("./test.png"));
+            FileOutputStream outputStream = new FileOutputStream(new File("./test2.png"));
             outputStream.write(data);
             outputStream.close();
             System.out.println("get object success");
