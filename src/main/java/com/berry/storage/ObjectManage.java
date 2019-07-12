@@ -88,6 +88,20 @@ public class ObjectManage {
         return null;
     }
 
+    /**
+     * 不允许使用表情符，请使用符合要求的 UTF-8 字符
+     *  '/' 用于分割路径，可快速创建子目录，但不要以 '/' 或 '\' 打头，不要出现连续的 '/'
+     * 不允许出现名为'..'的子目录
+     * 总长度控制在 1-254 个字符
+     * @param bucket 存储空间
+     * @param objectName 全路径 如 a/b/c
+     * @return
+     */
+//    public boolean createFolder(String bucket, String objectName) {
+//        String url = String.format("%s%s", config.defaultHost(), UrlFactory.ObjectUrl.create_folder.getUrl());
+//
+//    }
+
     public GenerateUrlWithSignedVo getObjectTempAccessUrlWithExpired(String bucket, String objectPath, Integer timeout) {
         if (timeout == null || timeout < 60 || timeout > 64800) {
             throw new IllegalArgumentException("timeout must between 60 and 64800");
