@@ -67,7 +67,7 @@ public class Response {
         if (body != null) {
             MediaType mediaType = body.contentType();
             if (mediaType != null) {
-                return mediaType.type() + "/" + mediaType.subtype();
+                return mediaType.type() + "/" + mediaType.subtype() + ";charset=" + mediaType.charset();
             }
         }
         return "";

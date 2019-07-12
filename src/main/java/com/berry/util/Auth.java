@@ -48,13 +48,9 @@ public final class Auth {
         return new Auth(accessKeyId, secretKeySpec);
     }
 
-    public StringMap authorization(String url, byte[] body, String contentType) {
-        String authorization = SDK_REQUEST_TOKEN_PREFIX + signRequest(url, body, contentType);
-        return new StringMap().put(OSS_SDK_AUTH_HEAD_NAME, authorization);
-    }
-
     public StringMap authorization(String url) {
-        return authorization(url, null, null);
+        String authorization = SDK_REQUEST_TOKEN_PREFIX + signRequest(url);
+        return new StringMap().put(OSS_SDK_AUTH_HEAD_NAME, authorization);
     }
 
     /**
@@ -86,11 +82,9 @@ public final class Auth {
      * 生成HTTP请求签名字符串
      *
      * @param urlString   url
-     * @param body        请求体
-     * @param contentType 请求体类型
      * @return 签名字符串
      */
-    private String signRequest(String urlString, @Nullable byte[] body, @Nullable String contentType) {
+    private String signRequest(String urlString) {
         URI uri = URI.create(urlString);
         String path = uri.getRawPath();
         String query = uri.getRawQuery();
@@ -104,9 +98,6 @@ public final class Auth {
             mac.update(StringUtils.utf8Bytes(query));
         }
         mac.update((byte) '\n');
-        if (body != null && Constants.FORM_MIME.equalsIgnoreCase(contentType)) {
-            mac.update(body);
-        }
 
         String digest = Base64Util.encode(mac.doFinal());
 

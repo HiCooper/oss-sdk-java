@@ -85,7 +85,7 @@ public final class BucketManage {
             throw new IllegalArgumentException("name and region cannot be blank!");
         }
         if (!name.matches(Constants.BUCKET_NAME_PATTERN)) {
-            throw new IllegalArgumentException("bucket name illegal 只允许小写字母、数字、中划线（-），且不能以短横线开头或结尾,长度3-63");
+            throw new IllegalArgumentException("bucket name illegal, 只允许小写字母、数字、中划线（-），且不能以短横线开头或结尾,长度3-63");
         }
         StringMap params = new StringMap();
         params.put("name", name);
@@ -143,7 +143,7 @@ public final class BucketManage {
      * @return true or false
      */
     private Boolean getResult(String url, StringMap params) {
-        Response response = post(url, StringUtils.utf8Bytes(params.jsonString()));
+        Response response = post(url, params);
         Result result = response.jsonToObject(Result.class);
         if (result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
             return true;
@@ -157,10 +157,10 @@ public final class BucketManage {
         return HttpClient.get(url, params, header);
     }
 
-    private Response post(String url, byte[] body) {
+    private Response post(String url, StringMap params) {
         System.out.println("request url:" + url);
-        StringMap header = auth.authorization(url, body, Constants.JSON_MIME);
+        StringMap header = auth.authorization(url);
         System.out.println(header.jsonString());
-        return HttpClient.post(url, body, header);
+        return HttpClient.post(url, params.jsonString(), header);
     }
 }

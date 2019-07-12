@@ -136,20 +136,6 @@ public class HttpClient {
     }
 
     /**
-     * Json 请求 （application/json;charset=UTF-8）
-     *
-     * @param url
-     * @param params
-     * @param headers
-     * @return
-     */
-    public static Response postJson(String url, StringMap params, StringMap headers) {
-        Gson gson = new GsonBuilder().enableComplexMapKeySerialization().create();
-        RequestBody requestBody = RequestBody.create(MediaType.get(APPLICATION_JSON_UTF8_VALUE), gson.toJson(params));
-        return post(url, requestBody, headers);
-    }
-
-    /**
      * 请求体为 字符串， 默认媒体类型-JSON
      */
     public static Response post(String url, String body, StringMap header) {

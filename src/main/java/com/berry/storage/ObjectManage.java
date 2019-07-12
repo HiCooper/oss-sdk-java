@@ -57,9 +57,8 @@ public class ObjectManage {
             fields.put("filePath", filePath);
         }
         String url = String.format("%s%s", config.defaultHost(), UrlFactory.ObjectUrl.create.getUrl());
-        byte[] body = StringUtils.utf8Bytes(fields.jsonString());
 
-        StringMap header = auth.authorization(url, body, Constants.MULTIPART_MIME);
+        StringMap header = auth.authorization(url);
         Response response = HttpClient.multipartPost(url, fields, "file", "demo.png", file, Constants.MULTIPART_MIME, header);
         Result result = response.jsonToObject(Result.class);
         if (result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
@@ -82,7 +81,7 @@ public class ObjectManage {
         }
         String url = String.format(config.defaultHost() + UrlFactory.ObjectUrl.get_object.getUrl(), bucket, fullObjectPath);
         Response response = get(url);
-        if (response.getContentType().equals(Constants.DEFAULT_MIME)) {
+        if (response.isSuccessful()) {
             return response.getBody();
         }
         logger.error(response.bodyString());
@@ -98,7 +97,7 @@ public class ObjectManage {
         params.put("objectPath", objectPath);
         params.put("timeout", timeout);
         String url = String.format("%s%s", config.defaultHost(), UrlFactory.ObjectUrl.generate_url_with_signed.getUrl());
-        Response response = post(url, StringUtils.utf8Bytes(params.jsonString()));
+        Response response = post(url, params);
         Result result = response.jsonToObject(Result.class);
         if (result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
             return new Gson().fromJson(Json.encode(result.getData()), GenerateUrlWithSignedVo.class);
@@ -113,11 +112,11 @@ public class ObjectManage {
         return HttpClient.get(url, header);
     }
 
-    private Response post(String url, byte[] body) {
+    private Response post(String url, StringMap params) {
         System.out.println("request url:" + url);
-        StringMap header = auth.authorization(url, body, Constants.JSON_MIME);
+        StringMap header = auth.authorization(url);
         System.out.println(header.jsonString());
-        return HttpClient.post(url, new String(body), header);
+        return HttpClient.post(url, params.jsonString(), header);
     }
 
 
