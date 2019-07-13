@@ -26,7 +26,7 @@ import java.io.File;
  * fileName：ObjectManage
  * Use：
  */
-public class ObjectManage {
+public final class ObjectManage {
 
     private static final Logger logger = LoggerFactory.getLogger(BucketManage.class);
 
@@ -89,20 +89,55 @@ public class ObjectManage {
     }
 
     /**
+     * 创建目录
      * 不允许使用表情符，请使用符合要求的 UTF-8 字符
-     *  '/' 用于分割路径，可快速创建子目录，但不要以 '/' 或 '\' 打头，不要出现连续的 '/'
+     * '/' 用于分割路径，可快速创建子目录，但不要以 '/' 或 '\' 打头，不要出现连续的 '/'
      * 不允许出现名为'..'的子目录
      * 总长度控制在 1-254 个字符
-     * @param bucket 存储空间
-     * @param objectName 全路径 如 a/b/c
-     * @return
+     *
+     * @param bucket 存储空间名
+     * @param folder 全路径 如 a/b/c
+     * @return 成功与否
      */
-//    public boolean createFolder(String bucket, String objectName) {
-//        String url = String.format("%s%s", config.defaultHost(), UrlFactory.ObjectUrl.create_folder.getUrl());
-//
-//    }
+    public boolean createFolder(String bucket, String folder) {
+        if (folder.matches(Constants.FILE_PATH_REG)) {
+            throw new IllegalArgumentException("目录名不符合规则");
+        }
+        StringMap params = new StringMap();
+        params.put("bucket", bucket);
+        params.put("folder", folder);
+        String url = String.format("%s%s", config.defaultHost(), UrlFactory.ObjectUrl.create_folder.getUrl());
+        Response response = post(url, params);
+        Result result = response.jsonToObject(Result.class);
+        return result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG);
+    }
 
-    public GenerateUrlWithSignedVo getObjectTempAccessUrlWithExpired(String bucket, String objectPath, Integer timeout) {
+    /**
+     * 删除对象或目录
+     *
+     * @param bucket  存储空间名
+     * @param objects 对象或目录全路径 如 /a/b/c.jpg 或 /a/c
+     * @return 成功与否
+     */
+    public boolean removeObjectOrFolder(String bucket, String objects) {
+        StringMap params = new StringMap();
+        params.put("bucket", bucket);
+        params.put("objects", objects);
+        String url = String.format("%s%s", config.defaultHost(), UrlFactory.ObjectUrl.delete_objects.getUrl());
+        Response response = post(url, params);
+        Result result = response.jsonToObject(Result.class);
+        return result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG);
+    }
+
+    /**
+     * 获取对象临时访问链接
+     *
+     * @param bucket     bucket name
+     * @param objectPath 对象全路径
+     * @param timeout    链接有效时间
+     * @return url
+     */
+    public String getObjectTempAccessUrlWithExpired(String bucket, String objectPath, Integer timeout) {
         if (timeout == null || timeout < 60 || timeout > 64800) {
             throw new IllegalArgumentException("timeout must between 60 and 64800");
         }
@@ -114,7 +149,8 @@ public class ObjectManage {
         Response response = post(url, params);
         Result result = response.jsonToObject(Result.class);
         if (result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
-            return new Gson().fromJson(Json.encode(result.getData()), GenerateUrlWithSignedVo.class);
+            GenerateUrlWithSignedVo vo = new Gson().fromJson(Json.encode(result.getData()), GenerateUrlWithSignedVo.class);
+            return vo.getUrl() + "?" + vo.getSignature();
         }
         logger.error("request error, code:{}, msg:{}", result.getCode(), result.getMsg());
         return null;
@@ -127,11 +163,8 @@ public class ObjectManage {
     }
 
     private Response post(String url, StringMap params) {
-        System.out.println("request url:" + url);
+        logger.debug("request url:" + url);
         StringMap header = auth.authorization(url);
-        System.out.println(header.jsonString());
         return HttpClient.post(url, params.jsonString(), header);
     }
-
-
 }

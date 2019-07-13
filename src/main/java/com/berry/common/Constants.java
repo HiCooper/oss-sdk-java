@@ -23,6 +23,13 @@ public final class Constants {
     public static final String BUCKET_NAME_PATTERN = "^[a-z0-9][a-z0-9_\\-]{1,61}[a-z0-9]$";
 
     /**
+     * 文件路径正则
+     * 不以 '/' 开头和结尾， 不能出现连续 '//' ，仅允许字母数字中文和单个 '/'
+     */
+    public static final String FILE_PATH_REG = "^[^/]((?!//)[a-zA-Z0-9/\\u4E00-\\u9FA5]+)*[^/]$";
+
+
+    /**
      * 版本号
      */
     public static final String VERSION = "1.0.0";

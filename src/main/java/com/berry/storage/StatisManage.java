@@ -9,6 +9,6 @@ package com.berry.storage;
  * fileName：ObjectManage
  * Use：
  */
-public class StatisManage {
+public final class StatisManage {
 
 }
