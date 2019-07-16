@@ -81,7 +81,7 @@ public final class ObjectManage {
         }
         String url = String.format(config.defaultHost() + UrlFactory.ObjectUrl.get_object.getUrl(), bucket, fullObjectPath);
         Response response = get(url);
-        if (response.isSuccessful()) {
+        if (response.isSuccessful() && response.getContentType().equals(Constants.DEFAULT_MIME)) {
             return response.getBody();
         }
         logger.error(response.bodyString());

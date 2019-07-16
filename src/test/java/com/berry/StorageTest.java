@@ -92,7 +92,7 @@ public class StorageTest {
      */
     @Test
     public void getObjectTest() throws IOException {
-        byte[] data = objectManage.getObject("cooper", "demo.png");
+        byte[] data = objectManage.getObject("test", "main_bg_sea.png");
         if (data != null) {
             FileOutputStream outputStream = new FileOutputStream(new File("./test2.png"));
             outputStream.write(data);
@@ -108,8 +108,8 @@ public class StorageTest {
      */
     @Test
     public void getObjectTempAccessUrlWithExpiredTest() {
-        GenerateUrlWithSignedVo vo = objectManage.getObjectTempAccessUrlWithExpired("cooper", "demo.png", 3600);
-        System.out.println(Json.encode(vo));
+        String url = objectManage.getObjectTempAccessUrlWithExpired("cooper", "demo.png", 3600);
+        System.out.println(url);
     }
 
 }
