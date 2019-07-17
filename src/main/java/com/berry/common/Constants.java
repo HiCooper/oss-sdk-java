@@ -34,8 +34,8 @@ public final class Constants {
      */
     public static final String VERSION = "1.0.0";
 
-//    public static final String DEFAULT_HOST = "47.101.42.169:8077";
-    public static final String DEFAULT_HOST = "192.168.2.194:8077";
+    public static final String DEFAULT_HOST = "47.101.42.169:8077";
+//    public static final String DEFAULT_HOST = "192.168.2.194:8077";
 
     /**
      * json
@@ -46,7 +46,7 @@ public final class Constants {
 
     public static final String MULTIPART_MIME = "multipart/form-data";
 
-    public static final String DEFAULT_MIME = "application/octet-stream;charset=utf-8";
+    public static final String DEFAULT_MIME = "application/octet-stream";
 
     public static final String  API_SUCCESS_CODE = "200";
 

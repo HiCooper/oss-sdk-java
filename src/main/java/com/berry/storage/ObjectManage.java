@@ -81,7 +81,8 @@ public final class ObjectManage {
         }
         String url = String.format(config.defaultHost() + UrlFactory.ObjectUrl.get_object.getUrl(), bucket, fullObjectPath);
         Response response = get(url);
-        if (response.isSuccessful() && response.getContentType().equalsIgnoreCase(Constants.DEFAULT_MIME)) {
+        System.out.println(response.getContentType());
+        if (response.isSuccessful() && response.getContentType().startsWith(Constants.DEFAULT_MIME)) {
             return response.getBody();
         }
         logger.error(response.bodyString());
@@ -157,14 +158,16 @@ public final class ObjectManage {
     }
 
     private Response get(String url) {
+        logger.debug("request url:" + url);
         StringMap header = auth.authorization(url);
-        System.out.println(Json.encode(header));
+        System.out.println("header:" + Json.encode(header));
         return HttpClient.get(url, header);
     }
 
     private Response post(String url, StringMap params) {
         logger.debug("request url:" + url);
         StringMap header = auth.authorization(url);
+        System.out.println("header:" + Json.encode(header));
         return HttpClient.post(url, params.jsonString(), header);
     }
 }
