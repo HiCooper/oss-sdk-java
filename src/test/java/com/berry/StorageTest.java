@@ -92,7 +92,7 @@ public class StorageTest {
      */
     @Test
     public void getObjectTest() throws IOException {
-        byte[] data = objectManage.getObject("test", "main_bg.png");
+        byte[] data = objectManage.getObject("test", "NotFound-260-260.png");
         if (data != null) {
             FileOutputStream outputStream = new FileOutputStream(new File("./test2.png"));
             outputStream.write(data);
