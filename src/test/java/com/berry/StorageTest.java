@@ -26,8 +26,8 @@ public class StorageTest {
     /**
      * 根据 密钥对 获取 管理 用户 test 的 xxManage
      */
-    private static final String accessKeyId = "UmAWuGv6aC5pE7bQ6il8wO";
-    private static final String accessKeySecret = "URbe6TvfdF5XhEeRXiB7yewYcU5PFEe";
+    private static final String accessKeyId = "VQ5Brcc6CDJJcH5v.ybXI7";
+    private static final String accessKeySecret = "NLghXz00gli26IZtvV8dTbOMHjqpIbN";
     private final BucketManage bucketManage = new BucketManage(Auth.create(accessKeyId, accessKeySecret));
     private final ObjectManage objectManage = new ObjectManage(Auth.create(accessKeyId, accessKeySecret));
 
@@ -97,7 +97,7 @@ public class StorageTest {
                 throw new IOException("not enough bytes read");
             }
             inputStream.close();
-            Boolean upload = objectManage.upload("cooper", "PUBLIC_READ", null, "byte_test.png", fileData);
+            Boolean upload = objectManage.upload("test", "PUBLIC_READ", null, "byte_test.png", fileData);
             if (upload) {
                 System.out.println("上传成功！");
             }
