@@ -147,7 +147,7 @@ public class HttpClient {
      */
     public static Response postComplex(String url, StringMap params, StringMap header) {
         Gson gson = new GsonBuilder().enableComplexMapKeySerialization().create();
-        RequestBody requestBody = RequestBody.create(MediaType.get(APPLICATION_JSON_UTF8_VALUE), gson.toJson(params));
+        RequestBody requestBody = RequestBody.create(MediaType.get(APPLICATION_JSON_UTF8_VALUE), gson.toJson(params.map()));
         return post(url, requestBody, header);
     }
 
