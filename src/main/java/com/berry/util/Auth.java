@@ -1,8 +1,5 @@
 package com.berry.util;
 
-import com.berry.common.Constants;
-
-import javax.annotation.Nullable;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.net.URI;
@@ -81,7 +78,7 @@ public final class Auth {
     /**
      * 生成HTTP请求签名字符串
      *
-     * @param urlString   url
+     * @param urlString url
      * @return 签名字符串
      */
     private String signRequest(String urlString) {
