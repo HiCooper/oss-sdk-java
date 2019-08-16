@@ -39,7 +39,30 @@ System.out.println(result);
 public void createObjectTest() {
     File file = new File("./demo.png");
     if (file.isFile() && file.exists()) {
-        Boolean upload = objectManage.upload("cooper", "PUBLIC_READ", null, new File("./timg.jpg"));
+        Boolean upload = objectManage.upload("cooper", "PUBLIC_READ", null, file);
+        if (upload) {
+            System.out.println("上传成功！");
+        }
+    } else {
+        System.out.println("file not exist");
+    }
+}
+````
+
+### 6. 字节数组格式创建 对象
+````java
+public void uploadObjectByteDataTest() throws IOException {
+    File file = new File("./demo.png");
+    if (file.isFile() && file.exists()) {
+        FileInputStream inputStream = new FileInputStream(file);
+        final int fileSize = inputStream.available();
+        byte[] fileData = new byte[fileSize];
+        int read = inputStream.read(fileData, 0, fileSize);
+        if (read != fileSize) {
+            throw new IOException("not enough bytes read");
+        }
+        inputStream.close();
+        Boolean upload = objectManage.upload("cooper", "PUBLIC_READ", null, "byte_test.png", fileData);
         if (upload) {
             System.out.println("上传成功！");
         }

@@ -9,9 +9,7 @@ import com.berry.util.Auth;
 import com.berry.util.Json;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
 
 /**
@@ -77,7 +75,28 @@ public class StorageTest {
     public void createObjectTest() {
         File file = new File("./demo.png");
         if (file.isFile() && file.exists()) {
-            Boolean upload = objectManage.upload("cooper", "PUBLIC_READ", null, new File("./timg.jpg"));
+            Boolean upload = objectManage.upload("cooper", "PUBLIC_READ", null, file);
+            if (upload) {
+                System.out.println("上传成功！");
+            }
+        } else {
+            System.out.println("file not exist");
+        }
+    }
+
+    @Test
+    public void uploadObjectByteDataTest() throws IOException {
+        File file = new File("./demo.png");
+        if (file.isFile() && file.exists()) {
+            FileInputStream inputStream = new FileInputStream(file);
+            final int fileSize = inputStream.available();
+            byte[] fileData = new byte[fileSize];
+            int read = inputStream.read(fileData, 0, fileSize);
+            if (read != fileSize) {
+                throw new IOException("not enough bytes read");
+            }
+            inputStream.close();
+            Boolean upload = objectManage.upload("cooper", "PUBLIC_READ", null, "byte_test.png", fileData);
             if (upload) {
                 System.out.println("上传成功！");
             }

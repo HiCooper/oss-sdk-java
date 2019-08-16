@@ -38,6 +38,33 @@ public final class ObjectManage {
     }
 
     /**
+     * upload object byte data
+     */
+    public Boolean upload(String bucket, String acl, @Nullable String filePath, String fileName, byte[] fileData) {
+        // 验证acl 规范
+        if (!Constants.AclType.ALL_NAME.contains(acl)) {
+            throw new IllegalArgumentException("illegal acl, enum [" + Constants.AclType.ALL_NAME + "]");
+        }
+        StringMap params = new StringMap();
+        params.put("bucket", bucket);
+        params.put("acl", acl);
+        if (StringUtils.isNotBlank(filePath)) {
+            params.put("filePath", filePath);
+        }
+        params.put("fileName", fileName);
+        params.put("data", fileData);
+        String url = String.format("%s%s", config.defaultHost(), UrlFactory.ObjectUrl.upload_byte.getUrl());
+        StringMap header = auth.authorization(url);
+        Response response = HttpClient.postComplex(url, params, header);
+        Result result = response.jsonToObject(Result.class);
+        if (result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
+            return true;
+        }
+        logger.error("request error, code:{}, msg:{}", result.getCode(), result.getMsg());
+        return false;
+    }
+
+    /**
      * upload opject
      *
      * @param bucket   bucket name
@@ -48,7 +75,7 @@ public final class ObjectManage {
     public Boolean upload(String bucket, String acl, @Nullable String filePath, File file) {
         // 验证acl 规范
         if (!Constants.AclType.ALL_NAME.contains(acl)) {
-            throw new IllegalArgumentException("illegal acl, enum [PRIVATE, PUBLIC_READ, PUBLIC_READ_WRITE]");
+            throw new IllegalArgumentException("illegal acl, enum [" + Constants.AclType.ALL_NAME + "]");
         }
         StringMap fields = new StringMap();
         fields.put("bucket", bucket);

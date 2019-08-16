@@ -143,6 +143,15 @@ public class HttpClient {
     }
 
     /**
+     * 复杂Map（包含字节数组）对象 以 json 格式请求，
+     */
+    public static Response postComplex(String url, StringMap params, StringMap header) {
+        Gson gson = new GsonBuilder().enableComplexMapKeySerialization().create();
+        RequestBody requestBody = RequestBody.create(MediaType.get(APPLICATION_JSON_UTF8_VALUE), gson.toJson(params));
+        return post(url, requestBody, header);
+    }
+
+    /**
      * 请求体为 字节数组，默认媒体类型-JSON
      */
     public static Response post(String url, byte[] body, StringMap header) {

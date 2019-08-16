@@ -55,6 +55,7 @@ public class UrlFactory {
          */
         get_object("/ajax/bucket/file/%s/%s?Download=true", "获取对象(私有对象，需要临时口令，且限时访问；公开对象，直接访问，第一个 '%s' 为 bucket name 第二个 '%s' 为对象相对根路径的全路径，包含对象名)", "GET"),
         create("/ajax/bucket/file/create", "创建对象", "POST"),
+        upload_byte("/ajax/bucket/file/upload_byte.json", "以字节数组格式创建对象，文件名必须", "POST"),
         create_folder("/ajax/bucket/file/create_folder.json", "新建目录，支持同事创建多级目录", "POST"),
         generate_url_with_signed("/ajax/bucket/file/generate_url_with_signed.json", "根据过期时间 生成对象临时访问url", "POST"),
         delete_objects("/ajax/bucket/file/delete_objects.json", "删除对象", "POST"),
