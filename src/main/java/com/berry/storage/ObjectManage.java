@@ -95,6 +95,25 @@ public final class ObjectManage {
         return false;
     }
 
+    public Boolean upload(String bucket, String acl, @Nullable String filePath,  String fileName, String base64Data) {
+        // 验证acl 规范
+        if (!Constants.AclType.ALL_NAME.contains(acl)) {
+            throw new IllegalArgumentException("illegal acl, enum [" + Constants.AclType.ALL_NAME + "]");
+        }
+        StringMap params = new StringMap();
+        params.put("bucket", bucket);
+        params.put("acl", acl);
+        params.put("fileName", fileName);
+        params.put("data", base64Data);
+        if (StringUtils.isNotBlank(filePath)) {
+            params.put("filePath", filePath);
+        }
+        String url = String.format("%s%s", config.defaultHost(), UrlFactory.ObjectUrl.create.getUrl());
+        Response response = post(url, params);
+        Result result = response.jsonToObject(Result.class);
+        return result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG);
+    }
+
     /**
      * 读取对象
      *
