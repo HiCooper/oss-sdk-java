@@ -103,15 +103,20 @@ public final class ObjectManage {
         StringMap params = new StringMap();
         params.put("bucket", bucket);
         params.put("acl", acl);
-        params.put("fileName", fileName);
-        params.put("data", base64Data);
         if (StringUtils.isNotBlank(filePath)) {
             params.put("filePath", filePath);
         }
-        String url = String.format("%s%s", config.defaultHost(), UrlFactory.ObjectUrl.create.getUrl());
-        Response response = post(url, params);
+        params.put("fileName", fileName);
+        params.put("data", base64Data);
+        String url = String.format("%s%s", config.defaultHost(), UrlFactory.ObjectUrl.upload_base64.getUrl());
+        StringMap header = auth.authorization(url);
+        Response response = HttpClient.postComplex(url, params, header);
         Result result = response.jsonToObject(Result.class);
-        return result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG);
+        if (result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
+            return true;
+        }
+        logger.error("request error, code:{}, msg:{}", result.getCode(), result.getMsg());
+        return false;
     }
 
     /**
