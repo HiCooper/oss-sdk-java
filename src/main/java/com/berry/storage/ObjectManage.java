@@ -54,7 +54,7 @@ public final class ObjectManage {
         }
         params.put("fileName", fileName);
         params.put("data", fileData);
-        String url = String.format("%s%s", config.defaultHost(), UrlFactory.ObjectUrl.upload_byte.getUrl());
+        String url = String.format("%s%s", config.getAddress(), UrlFactory.ObjectUrl.upload_byte.getUrl());
         StringMap header = auth.authorization(url);
         Response response = HttpClient.postComplex(url, params, header);
         Result result = response.jsonToObject(Result.class);
@@ -84,7 +84,7 @@ public final class ObjectManage {
         if (StringUtils.isNotBlank(filePath)) {
             fields.put("filePath", filePath);
         }
-        String url = String.format("%s%s", config.defaultHost(), UrlFactory.ObjectUrl.create.getUrl());
+        String url = String.format("%s%s", config.getAddress(), UrlFactory.ObjectUrl.create.getUrl());
 
         StringMap header = auth.authorization(url);
         Response response = HttpClient.multipartPost(url, fields, "file", "demo.png", file, Constants.MULTIPART_MIME, header);
@@ -109,7 +109,7 @@ public final class ObjectManage {
         }
         params.put("fileName", fileName);
         params.put("data", base64Data);
-        String url = String.format("%s%s", config.defaultHost(), UrlFactory.ObjectUrl.upload_base64.getUrl());
+        String url = String.format("%s%s", config.getAddress(), UrlFactory.ObjectUrl.upload_base64.getUrl());
         StringMap header = auth.authorization(url);
         Response response = HttpClient.postComplex(url, params, header);
         Result result = response.jsonToObject(Result.class);
@@ -131,7 +131,7 @@ public final class ObjectManage {
         if (fullObjectPath.startsWith("/")) {
             throw new IllegalArgumentException("object full path not allow start with / ");
         }
-        String url = String.format(config.defaultHost() + UrlFactory.ObjectUrl.get_object.getUrl(), bucket, fullObjectPath);
+        String url = String.format(config.getAddress() + UrlFactory.ObjectUrl.get_object.getUrl(), bucket, fullObjectPath);
         Response response = get(url);
         System.out.println(response.getContentType());
         if (response.isSuccessful() && response.getContentType().startsWith(Constants.DEFAULT_MIME)) {
@@ -159,7 +159,7 @@ public final class ObjectManage {
         StringMap params = new StringMap();
         params.put("bucket", bucket);
         params.put("folder", folder);
-        String url = String.format("%s%s", config.defaultHost(), UrlFactory.ObjectUrl.create_folder.getUrl());
+        String url = String.format("%s%s", config.getAddress(), UrlFactory.ObjectUrl.create_folder.getUrl());
         Response response = post(url, params);
         Result result = response.jsonToObject(Result.class);
         return result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG);
@@ -176,7 +176,7 @@ public final class ObjectManage {
         StringMap params = new StringMap();
         params.put("bucket", bucket);
         params.put("objects", objects);
-        String url = String.format("%s%s", config.defaultHost(), UrlFactory.ObjectUrl.delete_objects.getUrl());
+        String url = String.format("%s%s", config.getAddress(), UrlFactory.ObjectUrl.delete_objects.getUrl());
         Response response = post(url, params);
         Result result = response.jsonToObject(Result.class);
         return result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG);
@@ -198,7 +198,7 @@ public final class ObjectManage {
         params.put("bucket", bucket);
         params.put("objectPath", objectPath);
         params.put("timeout", timeout);
-        String url = String.format("%s%s", config.defaultHost(), UrlFactory.ObjectUrl.generate_url_with_signed.getUrl());
+        String url = String.format("%s%s", config.getAddress(), UrlFactory.ObjectUrl.generate_url_with_signed.getUrl());
         Response response = post(url, params);
         Result result = response.jsonToObject(Result.class);
         if (result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG)) {

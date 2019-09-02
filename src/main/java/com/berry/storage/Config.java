@@ -46,7 +46,7 @@ public final class Config {
         this.useHttpsDomains = useHttpsDomains;
     }
 
-    String defaultHost() {
+    public String getAddress() {
         String scheme = "http://";
         if (useHttpsDomains) {
             scheme = "https://";

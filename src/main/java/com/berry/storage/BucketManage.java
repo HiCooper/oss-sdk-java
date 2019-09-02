@@ -48,7 +48,7 @@ public final class BucketManage {
      * @return 列表
      */
     public List<BucketInfoVo> queryBucket(@Nullable String bucketName) {
-        String url = String.format("%s%s", config.defaultHost(), UrlFactory.BucketUr.list.getUrl());
+        String url = String.format("%s%s", config.getAddress(), UrlFactory.BucketUr.list.getUrl());
         StringMap params = new StringMap();
         params.putNotNull("name", bucketName);
         Response response = get(url, params.size() > 1 ? params : null);
@@ -98,7 +98,7 @@ public final class BucketManage {
             }
             params.put("acl", acl);
         }
-        String url = String.format("%s%s", config.defaultHost(), UrlFactory.BucketUr.new_create_bucket.getUrl());
+        String url = String.format("%s%s", config.getAddress(), UrlFactory.BucketUr.new_create_bucket.getUrl());
         return getResult(url, params);
     }
 
@@ -113,7 +113,7 @@ public final class BucketManage {
         if (StringUtils.isAnyBlank(bucket, acl)) {
             throw new IllegalArgumentException("bucket and acl cannot be blank!");
         }
-        String url = String.format("%s%s", config.defaultHost(), UrlFactory.BucketUr.set_acl.getUrl());
+        String url = String.format("%s%s", config.getAddress(), UrlFactory.BucketUr.set_acl.getUrl());
         StringMap params = new StringMap();
         params.put("bucket", bucket);
         params.put("acl", acl);
@@ -130,7 +130,7 @@ public final class BucketManage {
         if (StringUtils.isBlank(bucket)) {
             throw new IllegalArgumentException("bucket cannot be blank!");
         }
-        String url = String.format("%s%s", config.defaultHost(), UrlFactory.BucketUr.delete_bucket.getUrl());
+        String url = String.format("%s%s", config.getAddress(), UrlFactory.BucketUr.delete_bucket.getUrl());
         StringMap params = new StringMap();
         params.put("bucket", bucket);
         return getResult(url, params);
