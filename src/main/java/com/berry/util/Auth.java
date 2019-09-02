@@ -52,14 +52,14 @@ public final class Auth {
 
     /**
      * 获取授权 口令，
-     * <p>注意：该口令拥有对应账户的所有权限</p>
+     * <p>注意：该口令拥有对应账户所有bucket的上传权限</p>
      *
-     * @param expires 有效时长，单位秒。默认3600s
+     * @param expires 有效时长，单位秒
      * @return token
      */
     public String uploadToken(long expires, String requestIp) {
         long deadline = System.currentTimeMillis() / 1000 + expires;
-        // 这里保存了 过期时间信息,允许访问的url ，请求ip
+        // 这里保存了 过期时间信息, 请求ip
         StringMap map = new StringMap();
         map.put(ENCODE_JSON_DEADLINE_KEY, deadline);
         map.put(ENCODE_JSON_REQUEST_IP_KEY, requestIp);
