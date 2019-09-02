@@ -86,33 +86,4 @@ public class UrlFactory {
             return method;
         }
     }
-
-    public enum StatisUrl {
-        /**
-         * 首页概览统计数据
-         */
-        home_overview("/ajax/statis/overview.json", "获取首页概览数据", "GET");
-
-        private String url;
-        private String desc;
-        private String method;
-
-        StatisUrl(String url, String desc, String method) {
-            this.url = url;
-            this.desc = desc;
-            this.method = method;
-        }
-
-        public String getUrl() {
-            return url;
-        }
-
-        public String getDesc() {
-            return desc;
-        }
-
-        public String getMethod() {
-            return method;
-        }
-    }
 }

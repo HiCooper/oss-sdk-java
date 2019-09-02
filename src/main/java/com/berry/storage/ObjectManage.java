@@ -31,10 +31,11 @@ public final class ObjectManage {
     private static final Logger logger = LoggerFactory.getLogger(BucketManage.class);
 
     private final Auth auth;
-    private final Config config = new Config();
+    private final Config config;
 
-    public ObjectManage(Auth auth) {
+    public ObjectManage(Auth auth, Config config) {
         this.auth = auth;
+        this.config = config;
     }
 
     /**
@@ -95,7 +96,7 @@ public final class ObjectManage {
         return false;
     }
 
-    public Boolean upload(String bucket, String acl, @Nullable String filePath,  String fileName, String base64Data) {
+    public Boolean upload(String bucket, String acl, @Nullable String filePath, String fileName, String base64Data) {
         // 验证acl 规范
         if (!Constants.AclType.ALL_NAME.contains(acl)) {
             throw new IllegalArgumentException("illegal acl, enum [" + Constants.AclType.ALL_NAME + "]");

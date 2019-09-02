@@ -34,10 +34,11 @@ public final class BucketManage {
     private static final Logger logger = LoggerFactory.getLogger(BucketManage.class);
 
     private final Auth auth;
-    private final Config config = new Config();
+    private final Config config;
 
-    public BucketManage(Auth auth) {
+    public BucketManage(Auth auth, Config config) {
         this.auth = auth;
+        this.config = config;
     }
 
     /**
