@@ -88,7 +88,7 @@ public final class ObjectManage {
         String url = String.format("%s%s", config.getAddress(), UrlFactory.ObjectUrl.create.getUrl());
 
         StringMap header = auth.authorization(url);
-        Response response = HttpClient.multipartPost(url, fields, "file", "demo.png", file, Constants.MULTIPART_MIME, header);
+        Response response = HttpClient.multipartPost(url, fields, "file", file.getName(), file, Constants.MULTIPART_MIME, header);
         Result result = response.jsonToObject(Result.class);
         if (result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
             return Json.decode(Json.encode(result.getData()), ObjectInfoVo.class);
