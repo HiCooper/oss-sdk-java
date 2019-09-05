@@ -7,7 +7,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.berry.common.Constants;
 import com.berry.http.HttpClient;
 import com.berry.http.Response;
-import com.berry.storage.dto.BucketInfoVo;
+import com.berry.storage.dto.BucketInfo;
 import com.berry.storage.dto.Result;
 import com.berry.storage.url.UrlFactory;
 import com.berry.util.Auth;
@@ -47,7 +47,7 @@ public final class BucketManage {
      * @param bucketName bucketName 可空
      * @return 列表
      */
-    public List<BucketInfoVo> queryBucket(@Nullable String bucketName) {
+    public List<BucketInfo> queryBucket(@Nullable String bucketName) {
         String url = String.format("%s%s", config.getAddress(), UrlFactory.BucketUr.list.getUrl());
         StringMap params = new StringMap();
         params.putNotNull("name", bucketName);
@@ -58,12 +58,12 @@ public final class BucketManage {
                 logger.error(result == null ? "empty result" : result.getMsg());
                 return null;
             }
-            List<BucketInfoVo> vos = new ArrayList<>();
+            List<BucketInfo> vos = new ArrayList<>();
             JSONArray array = JSONArray.parseArray(JSON.toJSONString(result.getData()));
-            BucketInfoVo vo;
+            BucketInfo vo;
             for (int i = 0; i < array.size(); i++) {
                 JSONObject o = array.getJSONObject(i);
-                vo = Json.decode(JSON.toJSONString(o), BucketInfoVo.class);
+                vo = Json.decode(JSON.toJSONString(o), BucketInfo.class);
                 vos.add(vo);
             }
             return vos;

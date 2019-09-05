@@ -12,8 +12,8 @@ private final BucketManage bucketManage = new BucketManage(Auth.create(accessKey
 
 ### 1.查询 Bucket 列表
 ````java
-List<BucketInfoVo> bucketInfoVos = bucketManage.queryBucket(null);
-System.out.println(JSON.toJSONString(bucketInfoVos));
+List<BucketInfoVo> bucketInfos = bucketManage.queryBucket(null);
+System.out.println(JSON.toJSONString(bucketInfos));
 ````
 
 ### 2.创建 Bucket

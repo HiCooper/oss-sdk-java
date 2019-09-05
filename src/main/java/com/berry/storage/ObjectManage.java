@@ -4,8 +4,8 @@ package com.berry.storage;
 import com.berry.common.Constants;
 import com.berry.http.HttpClient;
 import com.berry.http.Response;
-import com.berry.storage.dto.GenerateUrlWithSignedVo;
-import com.berry.storage.dto.ObjectInfoVo;
+import com.berry.storage.dto.GenerateUrlWithSigned;
+import com.berry.storage.dto.ObjectInfo;
 import com.berry.storage.dto.Result;
 import com.berry.storage.url.UrlFactory;
 import com.berry.util.Auth;
@@ -42,7 +42,7 @@ public final class ObjectManage {
     /**
      * upload object byte data
      */
-    public ObjectInfoVo upload(String bucket, String acl, @Nullable String filePath, String fileName, byte[] fileData) {
+    public ObjectInfo upload(String bucket, String acl, @Nullable String filePath, String fileName, byte[] fileData) {
         // 验证acl 规范
         if (!Constants.AclType.ALL_NAME.contains(acl)) {
             throw new IllegalArgumentException("illegal acl, enum [" + Constants.AclType.ALL_NAME + "]");
@@ -60,7 +60,7 @@ public final class ObjectManage {
         Response response = HttpClient.postComplex(url, params, header);
         Result result = response.jsonToObject(Result.class);
         if (result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
-            return Json.decode(Json.encode(result.getData()), ObjectInfoVo.class);
+            return Json.decode(Json.encode(result.getData()), ObjectInfo.class);
         }
         logger.error("request error, code:{}, msg:{}", result.getCode(), result.getMsg());
         return null;
@@ -74,7 +74,7 @@ public final class ObjectManage {
      * @param filePath 对象存储路径
      * @param file     文件
      */
-    public ObjectInfoVo upload(String bucket, String acl, @Nullable String filePath, File file) {
+    public ObjectInfo upload(String bucket, String acl, @Nullable String filePath, File file) {
         // 验证acl 规范
         if (!Constants.AclType.ALL_NAME.contains(acl)) {
             throw new IllegalArgumentException("illegal acl, enum [" + Constants.AclType.ALL_NAME + "]");
@@ -91,13 +91,13 @@ public final class ObjectManage {
         Response response = HttpClient.multipartPost(url, fields, "file", file.getName(), file, Constants.MULTIPART_MIME, header);
         Result result = response.jsonToObject(Result.class);
         if (result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
-            return Json.decode(Json.encode(result.getData()), ObjectInfoVo.class);
+            return Json.decode(Json.encode(result.getData()), ObjectInfo.class);
         }
         logger.error("request error, code:{}, msg:{}", result.getCode(), result.getMsg());
         return null;
     }
 
-    public ObjectInfoVo upload(String bucket, String acl, @Nullable String filePath, String fileName, String base64Data) {
+    public ObjectInfo upload(String bucket, String acl, @Nullable String filePath, String fileName, String base64Data) {
         // 验证acl 规范
         if (!Constants.AclType.ALL_NAME.contains(acl)) {
             throw new IllegalArgumentException("illegal acl, enum [" + Constants.AclType.ALL_NAME + "]");
@@ -115,7 +115,7 @@ public final class ObjectManage {
         Response response = HttpClient.postComplex(url, params, header);
         Result result = response.jsonToObject(Result.class);
         if (result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
-            return Json.decode(Json.encode(result.getData()), ObjectInfoVo.class);
+            return Json.decode(Json.encode(result.getData()), ObjectInfo.class);
         }
         logger.error("request error, code:{}, msg:{}", result.getCode(), result.getMsg());
         return null;
@@ -203,7 +203,7 @@ public final class ObjectManage {
         Response response = post(url, params);
         Result result = response.jsonToObject(Result.class);
         if (result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
-            GenerateUrlWithSignedVo vo = new Gson().fromJson(Json.encode(result.getData()), GenerateUrlWithSignedVo.class);
+            GenerateUrlWithSigned vo = new Gson().fromJson(Json.encode(result.getData()), GenerateUrlWithSigned.class);
             return vo.getUrl() + "?" + vo.getSignature();
         }
         logger.error("request error, code:{}, msg:{}", result.getCode(), result.getMsg());

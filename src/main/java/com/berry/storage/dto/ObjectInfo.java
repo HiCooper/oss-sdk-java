@@ -11,7 +11,7 @@ import lombok.Data;
  * Use：
  */
 @Data
-public class ObjectInfoVo {
+public class ObjectInfo {
 
     /**
      * 主键id

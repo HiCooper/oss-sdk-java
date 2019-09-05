@@ -13,7 +13,7 @@ import lombok.experimental.Accessors;
  */
 @Data
 @Accessors(chain = true)
-public class GenerateUrlWithSignedVo {
+public class GenerateUrlWithSigned {
     private String url;
     private String signature;
 }
