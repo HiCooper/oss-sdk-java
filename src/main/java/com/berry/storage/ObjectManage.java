@@ -1,6 +1,8 @@
 package com.berry.storage;
 
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.berry.common.Constants;
 import com.berry.http.HttpClient;
 import com.berry.http.Response;
@@ -74,7 +76,7 @@ public final class ObjectManage {
      * @param filePath 对象存储路径
      * @param file     文件
      */
-    public ObjectInfo upload(String bucket, String acl, @Nullable String filePath, File file) {
+    public JSONArray upload(String bucket, String acl, @Nullable String filePath, File file) {
         // 验证acl 规范
         if (!Constants.AclType.ALL_NAME.contains(acl)) {
             throw new IllegalArgumentException("illegal acl, enum [" + Constants.AclType.ALL_NAME + "]");
@@ -91,7 +93,7 @@ public final class ObjectManage {
         Response response = HttpClient.multipartPost(url, fields, "file", file.getName(), file, Constants.MULTIPART_MIME, header);
         Result result = response.jsonToObject(Result.class);
         if (result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
-            return Json.decode(Json.encode(result.getData()), ObjectInfo.class);
+            return JSON.parseArray(JSON.toJSONString(result.getData()));
         }
         logger.error("request error, code:{}, msg:{}", result.getCode(), result.getMsg());
         return null;

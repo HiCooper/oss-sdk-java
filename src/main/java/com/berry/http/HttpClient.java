@@ -343,7 +343,10 @@ public class HttpClient {
         try {
             response = CLIENT.newCall(requestBuilder.build()).execute();
             if (!response.isSuccessful()) {
-                throw new OssException(response.code(), response.message() + response.body());
+                int code = response.code();
+                String msg = response.message();
+                response.close();
+                throw new OssException(code, msg);
             }
         } catch (IOException e) {
             e.printStackTrace();
