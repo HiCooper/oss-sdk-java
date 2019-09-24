@@ -167,17 +167,27 @@ public class HttpClient {
     }
 
     /**
-     * 文件上传 文件体为 字节数组
+     * 批量文件上传
      */
     public static Response multipartPost(String url,
                                          StringMap fields,
                                          String name,
-                                         String fileName,
-                                         byte[] fileBody,
-                                         String mimeType,
+                                         File[] files,
                                          StringMap headers) {
-        RequestBody file = RequestBody.create(MediaType.parse(mimeType), fileBody);
-        return multipartPost(url, fields, name, fileName, file, headers);
+        final MultipartBody.Builder mb = new MultipartBody.Builder();
+        for (File file : files) {
+            RequestBody fileBody = RequestBody.create(MediaType.parse(Constants.MULTIPART_MIME), file);
+            mb.addFormDataPart(name, file.getName(), fileBody);
+        }
+        if (fields != null) {
+            for (Map.Entry<String, Object> entry : fields.entrySet()) {
+                mb.addFormDataPart(entry.getKey(), entry.getValue().toString());
+            }
+        }
+        mb.setType(MediaType.get("multipart/form-data"));
+        RequestBody body = mb.build();
+        Request.Builder requestBuilder = new Request.Builder().url(url).post(body);
+        return send(requestBuilder, headers);
     }
 
     /**
@@ -188,10 +198,10 @@ public class HttpClient {
                                          String name,
                                          String fileName,
                                          File fileBody,
-                                         String mimeType,
                                          StringMap headers) {
-        RequestBody file = RequestBody.create(MediaType.parse(mimeType), fileBody);
-        return multipartPost(url, fields, name, fileName, file, headers);
+        RequestBody file = RequestBody.create(MediaType.parse(Constants.MULTIPART_MIME), fileBody);
+        Request.Builder requestBuilder = getBuilder(url, fields, name, fileName, file);
+        return send(requestBuilder, headers);
     }
 
 
@@ -220,10 +230,9 @@ public class HttpClient {
                                           String name,
                                           String fileName,
                                           byte[] fileBody,
-                                          String mimeType,
                                           StringMap headers,
                                           AsyncCallback cb) {
-        RequestBody file = RequestBody.create(MediaType.parse(mimeType), fileBody);
+        RequestBody file = RequestBody.create(MediaType.parse(Constants.MULTIPART_MIME), fileBody);
         asyncMultipartPost(url, fields, name, fileName, file, headers, cb);
     }
 
@@ -235,10 +244,9 @@ public class HttpClient {
                                           String name,
                                           String fileName,
                                           File fileBody,
-                                          String mimeType,
                                           StringMap headers,
                                           AsyncCallback cb) {
-        RequestBody file = RequestBody.create(MediaType.parse(mimeType), fileBody);
+        RequestBody file = RequestBody.create(MediaType.parse(Constants.MULTIPART_MIME), fileBody);
         asyncMultipartPost(url, fields, name, fileName, file, headers, cb);
     }
 
@@ -280,26 +288,6 @@ public class HttpClient {
         return send(requestBuilder, header);
     }
 
-    /**
-     * 文件上传
-     *
-     * @param url      地址
-     * @param fields   字段信息 data part
-     * @param name     文件接受字段名
-     * @param fileName 文件名 可为空
-     * @param file     已包装的文件请求体
-     * @param headers  请求头 可为空
-     * @return 响应
-     */
-    private static Response multipartPost(String url,
-                                          StringMap fields,
-                                          String name,
-                                          @Nullable String fileName,
-                                          RequestBody file,
-                                          StringMap headers) {
-        Request.Builder requestBuilder = getBuilder(url, fields, name, fileName, file);
-        return send(requestBuilder, headers);
-    }
 
     /**
      * 后去文件上传类型 build
@@ -314,7 +302,6 @@ public class HttpClient {
     private static Request.Builder getBuilder(String url, StringMap fields, String name, @Nullable String fileName, RequestBody file) {
         final MultipartBody.Builder mb = new MultipartBody.Builder();
         mb.addFormDataPart(name, fileName, file);
-
         if (fields != null) {
             for (Map.Entry<String, Object> entry : fields.entrySet()) {
                 mb.addFormDataPart(entry.getKey(), entry.getValue().toString());
@@ -344,7 +331,8 @@ public class HttpClient {
             response = CLIENT.newCall(requestBuilder.build()).execute();
             if (!response.isSuccessful()) {
                 int code = response.code();
-                String msg = response.message();
+                String resMsg = response.body() != null ? response.body().string() : "";
+                String msg = response.message() + "," + resMsg;
                 response.close();
                 throw new OssException(code, msg);
             }

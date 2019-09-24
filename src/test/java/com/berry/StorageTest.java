@@ -1,6 +1,7 @@
 package com.berry;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.berry.storage.BucketManage;
 import com.berry.storage.Config;
 import com.berry.storage.ObjectManage;
@@ -76,10 +77,13 @@ public class StorageTest {
      */
     @Test
     public void createObjectTest() {
-        File file = new File("./demo.png");
+        File file = new File("./temp/demo.png");
+        File file2 = new File("./temp/demo2.png");
         if (file.isFile() && file.exists()) {
-            ObjectInfo vo = objectManage.upload("cooper", "PUBLIC_READ", null, file);
+            File[] files = {file, file2};
+            JSONArray vo = objectManage.upload("test", "PUBLIC_READ", null, files);
             if (vo != null) {
+                System.out.println(vo.toJSONString());
                 System.out.println("上传成功！");
             }
         } else {

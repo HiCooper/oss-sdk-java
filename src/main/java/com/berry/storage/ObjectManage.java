@@ -74,9 +74,9 @@ public final class ObjectManage {
      * @param bucket   bucket name
      * @param acl      对象acl
      * @param filePath 对象存储路径
-     * @param file     文件
+     * @param files    文件
      */
-    public JSONArray upload(String bucket, String acl, @Nullable String filePath, File file) {
+    public JSONArray upload(String bucket, String acl, @Nullable String filePath, File[] files) {
         // 验证acl 规范
         if (!Constants.AclType.ALL_NAME.contains(acl)) {
             throw new IllegalArgumentException("illegal acl, enum [" + Constants.AclType.ALL_NAME + "]");
@@ -90,7 +90,7 @@ public final class ObjectManage {
         String url = String.format("%s%s", config.getAddress(), UrlFactory.ObjectUrl.create.getUrl());
 
         StringMap header = auth.authorization(url);
-        Response response = HttpClient.multipartPost(url, fields, "file", file.getName(), file, Constants.MULTIPART_MIME, header);
+        Response response = HttpClient.multipartPost(url, fields, "file", files, header);
         Result result = response.jsonToObject(Result.class);
         if (result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
             return JSON.parseArray(JSON.toJSONString(result.getData()));
