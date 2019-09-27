@@ -35,7 +35,7 @@ public class HttpClient {
     /**
      * 连接超时时间 单位秒(默认10s)
      */
-    private static final int CONNECT_TIMEOUT = 10;
+    private static final int CONNECT_TIMEOUT = 30;
     /**
      * 回调超时
      */
