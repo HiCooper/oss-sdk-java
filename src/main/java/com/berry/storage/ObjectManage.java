@@ -36,9 +36,12 @@ public final class ObjectManage {
     private final Auth auth;
     private final Config config;
 
+    private final HttpClient client;
+
     public ObjectManage(Auth auth, Config config) {
         this.auth = auth;
         this.config = config;
+        this.client = new HttpClient(config.getUploadTimeout());
     }
 
     /**
@@ -59,7 +62,7 @@ public final class ObjectManage {
         params.put("data", fileData);
         String url = String.format("%s%s", config.getAddress(), UrlFactory.ObjectUrl.upload_byte.getUrl());
         StringMap header = auth.authorization(url);
-        Response response = HttpClient.postComplex(url, params, header);
+        Response response = client.postComplex(url, params, header);
         Result result = response.jsonToObject(Result.class);
         if (result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
             return Json.decode(Json.encode(result.getData()), ObjectInfo.class);
@@ -90,7 +93,7 @@ public final class ObjectManage {
         String url = String.format("%s%s", config.getAddress(), UrlFactory.ObjectUrl.create.getUrl());
 
         StringMap header = auth.authorization(url);
-        Response response = HttpClient.multipartPost(url, fields, "file", files, header);
+        Response response = client.multipartPost(url, fields, "file", files, header);
         Result result = response.jsonToObject(Result.class);
         if (result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
             return JSON.parseArray(JSON.toJSONString(result.getData()));
@@ -114,7 +117,7 @@ public final class ObjectManage {
         params.put("data", base64Data);
         String url = String.format("%s%s", config.getAddress(), UrlFactory.ObjectUrl.upload_base64.getUrl());
         StringMap header = auth.authorization(url);
-        Response response = HttpClient.postComplex(url, params, header);
+        Response response = client.postComplex(url, params, header);
         Result result = response.jsonToObject(Result.class);
         if (result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
             return Json.decode(Json.encode(result.getData()), ObjectInfo.class);
@@ -216,13 +219,13 @@ public final class ObjectManage {
         logger.debug("request url:" + url);
         StringMap header = auth.authorization(url);
         System.out.println("header:" + Json.encode(header));
-        return HttpClient.get(url, header);
+        return client.get(url, header);
     }
 
     private Response post(String url, StringMap params) {
         logger.debug("request url:" + url);
         StringMap header = auth.authorization(url);
         System.out.println("header:" + Json.encode(header));
-        return HttpClient.post(url, params.jsonString(), header);
+        return client.post(url, params.jsonString(), header);
     }
 }

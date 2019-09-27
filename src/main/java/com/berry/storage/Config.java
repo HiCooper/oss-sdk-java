@@ -17,6 +17,11 @@ public final class Config {
     private String host;
 
     /**
+     * 上传超时 单位秒
+     */
+    private int uploadTimeout = 10;
+
+    /**
      * 空间相关上传管理操作是否使用 https , 默认 否
      */
     private boolean useHttpsDomains = false;
@@ -25,9 +30,18 @@ public final class Config {
         this.host = host;
     }
 
-    public Config(String host, boolean useHttpsDomains) {
+    public Config(String host, int uploadTimeout, boolean useHttpsDomains) {
         this.host = host;
+        this.uploadTimeout = uploadTimeout;
         this.useHttpsDomains = useHttpsDomains;
+    }
+
+    public int getUploadTimeout() {
+        return uploadTimeout;
+    }
+
+    public void setUploadTimeout(int uploadTimeout) {
+        this.uploadTimeout = uploadTimeout;
     }
 
     public String getHost() {

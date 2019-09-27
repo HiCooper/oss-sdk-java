@@ -31,7 +31,7 @@ public class HttpClient {
     /**
      * 默认 http 客户端
      */
-    private static final OkHttpClient CLIENT;
+    private static OkHttpClient CLIENT;
     /**
      * 连接超时时间 单位秒(默认10s)
      */
@@ -63,19 +63,29 @@ public class HttpClient {
 
     private static final String APPLICATION_JSON_UTF8_VALUE = "application/json;charset=UTF-8";
 
+    private static Dispatcher dispatcher = new Dispatcher();
+    private static ConnectionPool pool = new ConnectionPool(CONNECTION_POOL_MAX_IDLE_COUNT, CONNECTION_POOL_MAX_IDLE_MINUTES, TimeUnit.MINUTES);
 
     static {
-        Dispatcher dispatcher = new Dispatcher();
         dispatcher.setMaxRequests(DISPATCHER_MAX_REQUESTS);
         dispatcher.setMaxRequestsPerHost(DISPATCHER_MAX_REQUESTS_PER_HOST);
-
-        ConnectionPool pool = new ConnectionPool(CONNECTION_POOL_MAX_IDLE_COUNT,
-                CONNECTION_POOL_MAX_IDLE_MINUTES, TimeUnit.MINUTES);
-
         CLIENT = new OkHttpClient.Builder()
                 .callTimeout(CALL_TIMEOUT, TimeUnit.SECONDS)
                 .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
                 .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
+                .dispatcher(dispatcher)
+                .connectionPool(pool)
+                .build();
+    }
+
+    public HttpClient() {
+    }
+
+    public HttpClient(int timeout) {
+        CLIENT = new OkHttpClient.Builder()
+                .callTimeout(timeout, TimeUnit.SECONDS)
+                .connectTimeout(timeout, TimeUnit.SECONDS)
+                .readTimeout(timeout * 3, TimeUnit.SECONDS)
                 .dispatcher(dispatcher)
                 .connectionPool(pool)
                 .build();
@@ -87,7 +97,7 @@ public class HttpClient {
      * @param url 地址
      * @return 响应
      */
-    public static Response get(String url) {
+    public Response get(String url) {
         return get(url, null, null);
     }
 
@@ -98,7 +108,7 @@ public class HttpClient {
      * @param header
      * @return
      */
-    public static Response get(String url, StringMap header) {
+    public Response get(String url, StringMap header) {
         return get(url, null, header);
     }
 
@@ -110,7 +120,7 @@ public class HttpClient {
      * @param header 请求头 map
      * @return 响应
      */
-    public static Response get(String url, @Nullable StringMap params, StringMap header) {
+    public Response get(String url, @Nullable StringMap params, StringMap header) {
         if (params != null) {
             String urlParams = StringUtils.parseUrlParams(params);
             url = url + "?" + urlParams;
@@ -127,7 +137,7 @@ public class HttpClient {
      * @param headers 请求头 map
      * @return 响应
      */
-    public static Response postForm(String url, StringMap params, StringMap headers) {
+    public Response postForm(String url, StringMap params, StringMap headers) {
         final FormBody.Builder fb = new FormBody.Builder();
         for (Map.Entry<String, Object> entry : params.entrySet()) {
             fb.add(entry.getKey(), entry.getValue().toString());
@@ -138,14 +148,14 @@ public class HttpClient {
     /**
      * 请求体为 字符串， 默认媒体类型-JSON
      */
-    public static Response post(String url, String body, StringMap header) {
+    public Response post(String url, String body, StringMap header) {
         return post(url, StringUtils.utf8Bytes(body), header, JSON_MIME);
     }
 
     /**
      * 复杂Map（包含字节数组）对象 以 json 格式请求，
      */
-    public static Response postComplex(String url, StringMap params, StringMap header) {
+    public Response postComplex(String url, StringMap params, StringMap header) {
         Gson gson = new GsonBuilder().enableComplexMapKeySerialization().create();
         RequestBody requestBody = RequestBody.create(MediaType.get(APPLICATION_JSON_UTF8_VALUE), gson.toJson(params.map()));
         return post(url, requestBody, header);
@@ -154,14 +164,14 @@ public class HttpClient {
     /**
      * 请求体为 字节数组，默认媒体类型-JSON
      */
-    public static Response post(String url, byte[] body, StringMap header) {
+    public Response post(String url, byte[] body, StringMap header) {
         return post(url, body, header, JSON_MIME);
     }
 
     /**
      * 请求体为 字节数组，指定 媒体类型
      */
-    public static Response post(String url, byte[] body, StringMap header, String contentType) {
+    public Response post(String url, byte[] body, StringMap header, String contentType) {
         RequestBody requestBody = RequestBody.create(MediaType.parse(contentType), body);
         return post(url, requestBody, header);
     }
@@ -169,11 +179,11 @@ public class HttpClient {
     /**
      * 批量文件上传
      */
-    public static Response multipartPost(String url,
-                                         StringMap fields,
-                                         String name,
-                                         File[] files,
-                                         StringMap headers) {
+    public Response multipartPost(String url,
+                                  StringMap fields,
+                                  String name,
+                                  File[] files,
+                                  StringMap headers) {
         final MultipartBody.Builder mb = new MultipartBody.Builder();
         for (File file : files) {
             RequestBody fileBody = RequestBody.create(MediaType.parse(Constants.MULTIPART_MIME), file);
@@ -193,12 +203,12 @@ public class HttpClient {
     /**
      * 文件上传 文件体为 file
      */
-    public static Response multipartPost(String url,
-                                         StringMap fields,
-                                         String name,
-                                         String fileName,
-                                         File fileBody,
-                                         StringMap headers) {
+    public Response multipartPost(String url,
+                                  StringMap fields,
+                                  String name,
+                                  String fileName,
+                                  File fileBody,
+                                  StringMap headers) {
         RequestBody file = RequestBody.create(MediaType.parse(Constants.MULTIPART_MIME), fileBody);
         Request.Builder requestBuilder = getBuilder(url, fields, name, fileName, file);
         return send(requestBuilder, headers);
@@ -216,7 +226,7 @@ public class HttpClient {
      * @param contentType 请求体类型
      * @param cb          异步回调
      */
-    public static void asyncPost(String url, byte[] body, int offset, int size, StringMap header, String contentType, AsyncCallback cb) {
+    public void asyncPost(String url, byte[] body, int offset, int size, StringMap header, String contentType, AsyncCallback cb) {
         RequestBody requestBody = RequestBody.create(MediaType.parse(contentType), body, offset, size);
         Request.Builder requestBuilder = new Request.Builder().url(url).post(requestBody);
         asyncSend(requestBuilder, header, cb);
@@ -225,13 +235,13 @@ public class HttpClient {
     /**
      * 异步文件上传 文件体为 字节数组
      */
-    public static void asyncMultipartPost(String url,
-                                          StringMap fields,
-                                          String name,
-                                          String fileName,
-                                          byte[] fileBody,
-                                          StringMap headers,
-                                          AsyncCallback cb) {
+    public void asyncMultipartPost(String url,
+                                   StringMap fields,
+                                   String name,
+                                   String fileName,
+                                   byte[] fileBody,
+                                   StringMap headers,
+                                   AsyncCallback cb) {
         RequestBody file = RequestBody.create(MediaType.parse(Constants.MULTIPART_MIME), fileBody);
         asyncMultipartPost(url, fields, name, fileName, file, headers, cb);
     }
@@ -239,13 +249,13 @@ public class HttpClient {
     /**
      * 异步文件上传 文件体为 file
      */
-    public static void asyncMultipartPost(String url,
-                                          StringMap fields,
-                                          String name,
-                                          String fileName,
-                                          File fileBody,
-                                          StringMap headers,
-                                          AsyncCallback cb) {
+    public void asyncMultipartPost(String url,
+                                   StringMap fields,
+                                   String name,
+                                   String fileName,
+                                   File fileBody,
+                                   StringMap headers,
+                                   AsyncCallback cb) {
         RequestBody file = RequestBody.create(MediaType.parse(Constants.MULTIPART_MIME), fileBody);
         asyncMultipartPost(url, fields, name, fileName, file, headers, cb);
     }
