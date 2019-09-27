@@ -35,10 +35,12 @@ public final class BucketManage {
 
     private final Auth auth;
     private final Config config;
+    private final HttpClient client;
 
     public BucketManage(Auth auth, Config config) {
         this.auth = auth;
         this.config = config;
+        this.client = new HttpClient(config.getUploadTimeout());
     }
 
     /**
@@ -155,13 +157,13 @@ public final class BucketManage {
 
     private Response get(String url, StringMap params) {
         StringMap header = auth.authorization(url);
-        return HttpClient.get(url, params, header);
+        return client.get(url, params, header);
     }
 
     private Response post(String url, StringMap params) {
         System.out.println("request url:" + url);
         StringMap header = auth.authorization(url);
         System.out.println(header.jsonString());
-        return HttpClient.post(url, params.jsonString(), header);
+        return client.post(url, params.jsonString(), header);
     }
 }
