@@ -3,6 +3,14 @@
 # oss-sdk-java
 java sdk for oss
 
+## 相关模块
+
+| 项目 | 描述 |
+|------|------|
+| [oss-backend](https://github.com/HiCooper/oss-backend) | 后端工程，Java 实现|
+| [oss-front](https://github.com/HiCooper/oss-front) | 前端工程，React 实现|
+| [oss-data-service](https://github.com/HiCooper/oss-data-service) | 分布式数据读取存储服务 |
+
 ## Bucket 管理
 
 ### 初始化，根据用户密钥对 初始化 `BucketManage`
