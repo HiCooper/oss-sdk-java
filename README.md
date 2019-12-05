@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/HiCooper/oss-sdk-java.svg?branch=master)](https://travis-ci.org/HiCooper/oss-sdk-java)
+
 # oss-sdk-java
 java sdk for oss
 
