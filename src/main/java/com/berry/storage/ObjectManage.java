@@ -175,17 +175,21 @@ public final class ObjectManage {
      * 删除对象或目录
      *
      * @param bucket  存储空间名
-     * @param objects 对象或目录全路径 如 /a/b/c.jpg 或 /a/c
+     * @param objectIds 对象id,多个用 英文逗号隔开
      * @return 成功与否
      */
-    public boolean removeObjectOrFolder(String bucket, String objects) {
+    public boolean removeObjectOrFolder(String bucket, String objectIds) {
         StringMap params = new StringMap();
         params.put("bucket", bucket);
-        params.put("objects", objects);
+        params.put("objectIds", objectIds);
         String url = String.format("%s%s", config.getAddress(), UrlFactory.ObjectUrl.delete_objects.getUrl());
         Response response = post(url, params);
         Result result = response.jsonToObject(Result.class);
-        return result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG);
+        if (!result.getCode().equals(Constants.API_SUCCESS_CODE) || !result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
+            logger.error(JSON.toJSONString(result));
+            return false;
+        }
+        return true;
     }
 
     /**
