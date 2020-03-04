@@ -4,6 +4,7 @@ package com.berry.storage;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.berry.common.Constants;
+import com.berry.common.OssException;
 import com.berry.http.HttpClient;
 import com.berry.http.Response;
 import com.berry.storage.dto.GenerateUrlWithSigned;
@@ -31,7 +32,7 @@ import java.io.File;
  */
 public final class ObjectManage {
 
-    private static final Logger logger = LoggerFactory.getLogger(BucketManage.class);
+    private static final Logger logger = LoggerFactory.getLogger(ObjectManage.class);
 
     private final Auth auth;
     private final Config config;
@@ -47,7 +48,7 @@ public final class ObjectManage {
     /**
      * upload object byte data
      */
-    public ObjectInfo upload(String bucket, String acl, @Nullable String filePath, String fileName, byte[] fileData) {
+    public ObjectInfo upload(String bucket, String acl, @Nullable String filePath, String fileName, byte[] fileData) throws OssException {
         // 验证acl 规范
         if (!Constants.AclType.ALL_NAME.contains(acl)) {
             throw new IllegalArgumentException("illegal acl, enum [" + Constants.AclType.ALL_NAME + "]");
@@ -67,8 +68,8 @@ public final class ObjectManage {
         if (result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
             return Json.decode(Json.encode(result.getData()), ObjectInfo.class);
         }
-        logger.error("request error, code:{}, msg:{}", result.getCode(), result.getMsg());
-        return null;
+        logger.error("request fail,stateCode:{}, msg:{}", result.getCode(), result.getMsg());
+        throw new OssException(result.getMsg());
     }
 
     /**
@@ -79,7 +80,7 @@ public final class ObjectManage {
      * @param filePath 对象存储路径
      * @param files    文件
      */
-    public JSONArray upload(String bucket, String acl, @Nullable String filePath, File[] files) {
+    public JSONArray upload(String bucket, String acl, @Nullable String filePath, File[] files) throws OssException {
         // 验证acl 规范
         if (!Constants.AclType.ALL_NAME.contains(acl)) {
             throw new IllegalArgumentException("illegal acl, enum [" + Constants.AclType.ALL_NAME + "]");
@@ -100,11 +101,11 @@ public final class ObjectManage {
                 && result.getData() != null) {
             return JSON.parseArray(JSON.toJSONString(result.getData()));
         }
-        logger.error("request error, code:{}, msg:{}", result.getCode(), result.getMsg());
-        return null;
+        logger.error("request fail,stateCode:{}, msg:{}", result.getCode(), result.getMsg());
+        throw new OssException(result.getMsg());
     }
 
-    public ObjectInfo upload(String bucket, String acl, @Nullable String filePath, String fileName, String base64Data) {
+    public ObjectInfo upload(String bucket, String acl, @Nullable String filePath, String fileName, String base64Data) throws OssException {
         // 验证acl 规范
         if (!Constants.AclType.ALL_NAME.contains(acl)) {
             throw new IllegalArgumentException("illegal acl, enum [" + Constants.AclType.ALL_NAME + "]");
@@ -126,8 +127,8 @@ public final class ObjectManage {
                 && result.getData() != null) {
             return Json.decode(Json.encode(result.getData()), ObjectInfo.class);
         }
-        logger.error("request error, code:{}, msg:{}", result.getCode(), result.getMsg());
-        return null;
+        logger.error("request fail,stateCode:{}, msg:{}", result.getCode(), result.getMsg());
+        throw new OssException(result.getMsg());
     }
 
     /**
@@ -137,7 +138,7 @@ public final class ObjectManage {
      * @param fullObjectPath 对象全路径 不已 '/' 开头
      * @return 对象二进制数组
      */
-    public byte[] getObject(String bucket, String fullObjectPath) {
+    public byte[] getObject(String bucket, String fullObjectPath) throws OssException {
         if (fullObjectPath.startsWith("/")) {
             throw new IllegalArgumentException("object full path not allow start with / ");
         }
@@ -146,8 +147,9 @@ public final class ObjectManage {
         if (response.isSuccessful() && response.getContentType().startsWith(Constants.DEFAULT_MIME)) {
             return response.getBody();
         }
-        logger.error(response.bodyString());
-        return null;
+        Result result = response.jsonToObject(Result.class);
+        logger.error("request fail,stateCode:{}, msg:{}", result.getCode(), result.getMsg());
+        throw new OssException(result.getMsg());
     }
 
     /**
@@ -161,7 +163,7 @@ public final class ObjectManage {
      * @param folder 全路径 如 a/b/c
      * @return 成功与否
      */
-    public boolean createFolder(String bucket, String folder) {
+    public boolean createFolder(String bucket, String folder) throws OssException {
         if (folder.matches(Constants.FILE_PATH_REG)) {
             throw new IllegalArgumentException("目录名不符合规则");
         }
@@ -171,7 +173,11 @@ public final class ObjectManage {
         String url = String.format("%s%s", config.getAddress(), UrlFactory.ObjectUrl.create_folder.getUrl());
         Response response = post(url, params);
         Result result = response.jsonToObject(Result.class);
-        return result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG);
+        boolean res = result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG);
+        if (!res) {
+            throw new OssException(result.getMsg());
+        }
+        return true;
     }
 
     /**
@@ -181,16 +187,16 @@ public final class ObjectManage {
      * @param objectIds 对象id,多个用 英文逗号隔开
      * @return 成功与否
      */
-    public boolean removeObjectOrFolder(String bucket, String objectIds) {
+    public boolean removeObjectOrFolder(String bucket, String objectIds) throws OssException {
         StringMap params = new StringMap();
         params.put("bucket", bucket);
         params.put("objectIds", objectIds);
         String url = String.format("%s%s", config.getAddress(), UrlFactory.ObjectUrl.delete_objects.getUrl());
         Response response = post(url, params);
         Result result = response.jsonToObject(Result.class);
-        if (!result.getCode().equals(Constants.API_SUCCESS_CODE) || !result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
-            logger.error(JSON.toJSONString(result));
-            return false;
+        boolean res = result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG);
+        if (!res) {
+            throw new OssException(result.getMsg());
         }
         return true;
     }
@@ -203,7 +209,7 @@ public final class ObjectManage {
      * @param timeout    链接有效时间
      * @return url
      */
-    public String getObjectTempAccessUrlWithExpired(String bucket, String objectPath, Integer timeout) {
+    public String getObjectTempAccessUrlWithExpired(String bucket, String objectPath, Integer timeout) throws OssException {
         if (timeout == null || timeout < 60 || timeout > 64800) {
             throw new IllegalArgumentException("timeout must between 60 and 64800");
         }
@@ -218,18 +224,18 @@ public final class ObjectManage {
             GenerateUrlWithSigned vo = new Gson().fromJson(Json.encode(result.getData()), GenerateUrlWithSigned.class);
             return vo.getUrl() + "?" + vo.getSignature();
         }
-        logger.error("request error, code:{}, msg:{}", result.getCode(), result.getMsg());
-        return null;
+        logger.error("request fail,stateCode:{}, msg:{}", result.getCode(), result.getMsg());
+        throw new OssException(result.getMsg());
     }
 
-    private Response get(String url) {
-        logger.debug("request url:" + url);
+    private Response get(String url) throws OssException {
+        logger.debug("request url:{}", url);
         StringMap header = auth.authorization(url);
         return client.get(url, header);
     }
 
-    private Response post(String url, StringMap params) {
-        logger.debug("request url:" + url);
+    private Response post(String url, StringMap params) throws OssException {
+        logger.debug("request url:{}", url);
         StringMap header = auth.authorization(url);
         return client.post(url, params.jsonString(), header);
     }

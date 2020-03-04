@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.berry.common.Constants;
+import com.berry.common.OssException;
 import com.berry.http.HttpClient;
 import com.berry.http.Response;
 import com.berry.storage.dto.BucketInfo;
@@ -14,6 +15,7 @@ import com.berry.util.Auth;
 import com.berry.util.Json;
 import com.berry.util.StringMap;
 import com.berry.util.StringUtils;
+import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +51,7 @@ public final class BucketManage {
      * @param bucketName bucketName 可空
      * @return 列表
      */
-    public List<BucketInfo> queryBucket(@Nullable String bucketName) {
+    public List<BucketInfo> queryBucket(@Nullable String bucketName) throws OssException {
         String url = String.format("%s%s", config.getAddress(), UrlFactory.BucketUr.list.getUrl());
         StringMap params = new StringMap();
         params.putNotNull("name", bucketName);
@@ -58,10 +60,10 @@ public final class BucketManage {
             Result result = response.jsonToObject(Result.class);
             if (result == null || !result.getCode().equals(Constants.API_SUCCESS_CODE) || !result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
                 logger.error(result == null ? "empty result" : result.getMsg());
-                return null;
+                return Lists.newArrayList();
             }
             List<BucketInfo> vos = new ArrayList<>();
-            JSONArray array = JSONArray.parseArray(JSON.toJSONString(result.getData()));
+            JSONArray array = JSON.parseArray(JSON.toJSONString(result.getData()));
             BucketInfo vo;
             for (int i = 0; i < array.size(); i++) {
                 JSONObject o = array.getJSONObject(i);
@@ -69,10 +71,9 @@ public final class BucketManage {
                 vos.add(vo);
             }
             return vos;
-        } else {
-            logger.error(response.getCode() + "," + response.getError());
         }
-        return null;
+        logger.error("request fail,stateCode:{}, msg:{}", response.getCode(), response.getMessage());
+        throw new OssException(response.getMessage());
     }
 
     /**
@@ -83,7 +84,7 @@ public final class BucketManage {
      * @param acl    ACL 权限,为空时 默认私有
      * @return true or false
      */
-    public Boolean createBucket(String name, String region, @Nullable String acl) {
+    public Boolean createBucket(String name, String region, @Nullable String acl) throws OssException {
         if (StringUtils.isAnyBlank(name, region)) {
             throw new IllegalArgumentException("name and region cannot be blank!");
         }
@@ -111,7 +112,7 @@ public final class BucketManage {
      * @param acl    acl
      * @return true or false
      */
-    public Boolean updateAcl(String bucket, String acl) {
+    public Boolean updateAcl(String bucket, String acl) throws OssException {
         if (StringUtils.isAnyBlank(bucket, acl)) {
             throw new IllegalArgumentException("bucket and acl cannot be blank!");
         }
@@ -128,7 +129,7 @@ public final class BucketManage {
      * @param bucket bucket name
      * @return true or false
      */
-    public Boolean delete(String bucket) {
+    public Boolean delete(String bucket) throws OssException {
         if (StringUtils.isBlank(bucket)) {
             throw new IllegalArgumentException("bucket cannot be blank!");
         }
@@ -145,7 +146,7 @@ public final class BucketManage {
      * @param params 参数
      * @return true or false
      */
-    private Boolean getResult(String url, StringMap params) {
+    private Boolean getResult(String url, StringMap params) throws OssException {
         Response response = post(url, params);
         Result result = response.jsonToObject(Result.class);
         if (result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
@@ -155,15 +156,13 @@ public final class BucketManage {
         return false;
     }
 
-    private Response get(String url, StringMap params) {
+    private Response get(String url, StringMap params) throws OssException {
         StringMap header = auth.authorization(url);
         return client.get(url, params, header);
     }
 
-    private Response post(String url, StringMap params) {
-        System.out.println("request url:" + url);
+    private Response post(String url, StringMap params) throws OssException {
         StringMap header = auth.authorization(url);
-        System.out.println(header.jsonString());
         return client.post(url, params.jsonString(), header);
     }
 }

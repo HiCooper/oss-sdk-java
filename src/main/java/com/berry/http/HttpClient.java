@@ -8,6 +8,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import okhttp3.*;
 import okhttp3.internal.annotations.EverythingIsNonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -27,6 +29,7 @@ import static com.berry.common.Constants.JSON_MIME;
  * @date 2019/6/24 15:29
  */
 public class HttpClient {
+    private static final Logger logger = LoggerFactory.getLogger(HttpClient.class);
 
     /**
      * 默认 http 客户端
@@ -97,7 +100,7 @@ public class HttpClient {
      * @param url 地址
      * @return 响应
      */
-    public Response get(String url) {
+    public Response get(String url) throws OssException {
         return get(url, null, null);
     }
 
@@ -108,7 +111,7 @@ public class HttpClient {
      * @param header
      * @return
      */
-    public Response get(String url, StringMap header) {
+    public Response get(String url, StringMap header) throws OssException {
         return get(url, null, header);
     }
 
@@ -120,7 +123,7 @@ public class HttpClient {
      * @param header 请求头 map
      * @return 响应
      */
-    public Response get(String url, @Nullable StringMap params, StringMap header) {
+    public Response get(String url, @Nullable StringMap params, StringMap header) throws OssException {
         if (params != null) {
             String urlParams = StringUtils.parseUrlParams(params);
             url = url + "?" + urlParams;
@@ -137,7 +140,7 @@ public class HttpClient {
      * @param headers 请求头 map
      * @return 响应
      */
-    public Response postForm(String url, StringMap params, StringMap headers) {
+    public Response postForm(String url, StringMap params, StringMap headers) throws OssException {
         final FormBody.Builder fb = new FormBody.Builder();
         for (Map.Entry<String, Object> entry : params.entrySet()) {
             fb.add(entry.getKey(), entry.getValue().toString());
@@ -148,14 +151,14 @@ public class HttpClient {
     /**
      * 请求体为 字符串， 默认媒体类型-JSON
      */
-    public Response post(String url, String body, StringMap header) {
+    public Response post(String url, String body, StringMap header) throws OssException {
         return post(url, StringUtils.utf8Bytes(body), header, JSON_MIME);
     }
 
     /**
      * 复杂Map（包含字节数组）对象 以 json 格式请求，
      */
-    public Response postComplex(String url, StringMap params, StringMap header) {
+    public Response postComplex(String url, StringMap params, StringMap header) throws OssException {
         Gson gson = new GsonBuilder().enableComplexMapKeySerialization().create();
         RequestBody requestBody = RequestBody.create(MediaType.get(APPLICATION_JSON_UTF8_VALUE), gson.toJson(params.map()));
         return post(url, requestBody, header);
@@ -164,14 +167,14 @@ public class HttpClient {
     /**
      * 请求体为 字节数组，默认媒体类型-JSON
      */
-    public Response post(String url, byte[] body, StringMap header) {
+    public Response post(String url, byte[] body, StringMap header) throws OssException {
         return post(url, body, header, JSON_MIME);
     }
 
     /**
      * 请求体为 字节数组，指定 媒体类型
      */
-    public Response post(String url, byte[] body, StringMap header, String contentType) {
+    public Response post(String url, byte[] body, StringMap header, String contentType) throws OssException {
         RequestBody requestBody = RequestBody.create(MediaType.parse(contentType), body);
         return post(url, requestBody, header);
     }
@@ -183,7 +186,7 @@ public class HttpClient {
                                   StringMap fields,
                                   String name,
                                   File[] files,
-                                  StringMap headers) {
+                                  StringMap headers) throws OssException {
         final MultipartBody.Builder mb = new MultipartBody.Builder();
         for (File file : files) {
             RequestBody fileBody = RequestBody.create(MediaType.parse(Constants.MULTIPART_MIME), file);
@@ -208,7 +211,7 @@ public class HttpClient {
                                   String name,
                                   String fileName,
                                   File fileBody,
-                                  StringMap headers) {
+                                  StringMap headers) throws OssException {
         RequestBody file = RequestBody.create(MediaType.parse(Constants.MULTIPART_MIME), fileBody);
         Request.Builder requestBuilder = getBuilder(url, fields, name, fileName, file);
         return send(requestBuilder, headers);
@@ -293,7 +296,7 @@ public class HttpClient {
      * @param header 请求头
      * @return 响应
      */
-    private static Response post(String url, RequestBody body, StringMap header) {
+    private static Response post(String url, RequestBody body, StringMap header) throws OssException {
         Request.Builder requestBuilder = new Request.Builder().url(url).post(body);
         return send(requestBuilder, header);
     }
@@ -329,14 +332,14 @@ public class HttpClient {
      * @param header         请求头
      * @return 响应
      */
-    private static Response send(final Request.Builder requestBuilder, @Nullable StringMap header) {
+    private static Response send(final Request.Builder requestBuilder, @Nullable StringMap header) throws OssException {
         if (header != null) {
             for (Map.Entry<String, Object> entry : header.entrySet()) {
                 requestBuilder.header(entry.getKey(), entry.getValue().toString());
             }
         }
         requestBuilder.header("User-Agent", userAgent());
-        okhttp3.Response response = null;
+        okhttp3.Response response;
         try {
             response = CLIENT.newCall(requestBuilder.build()).execute();
             if (!response.isSuccessful()) {
@@ -344,10 +347,10 @@ public class HttpClient {
                 String resMsg = response.body() != null ? response.body().string() : "";
                 String msg = response.message() + "," + resMsg;
                 response.close();
-                throw new OssException(code, msg);
+                logger.error("request fail,stateCode:{}, msg:{}", code, msg);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new OssException(e.getMessage());
         }
         return Response.create(response, null);
     }
