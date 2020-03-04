@@ -1,10 +1,13 @@
 package com.berry.storage;
 
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.berry.common.Constants;
 import com.berry.http.HttpClient;
 import com.berry.http.Response;
-import com.berry.storage.dto.GenerateUrlWithSignedVo;
+import com.berry.storage.dto.GenerateUrlWithSigned;
+import com.berry.storage.dto.ObjectInfo;
 import com.berry.storage.dto.Result;
 import com.berry.storage.url.UrlFactory;
 import com.berry.util.Auth;
@@ -31,10 +34,41 @@ public final class ObjectManage {
     private static final Logger logger = LoggerFactory.getLogger(BucketManage.class);
 
     private final Auth auth;
-    private final Config config = new Config();
+    private final Config config;
 
-    public ObjectManage(Auth auth) {
+    private final HttpClient client;
+
+    public ObjectManage(Auth auth, Config config) {
         this.auth = auth;
+        this.config = config;
+        this.client = new HttpClient(config.getUploadTimeout());
+    }
+
+    /**
+     * upload object byte data
+     */
+    public ObjectInfo upload(String bucket, String acl, @Nullable String filePath, String fileName, byte[] fileData) {
+        // 验证acl 规范
+        if (!Constants.AclType.ALL_NAME.contains(acl)) {
+            throw new IllegalArgumentException("illegal acl, enum [" + Constants.AclType.ALL_NAME + "]");
+        }
+        StringMap params = new StringMap();
+        params.put("bucket", bucket);
+        params.put("acl", acl);
+        if (StringUtils.isNotBlank(filePath)) {
+            params.put("filePath", filePath);
+        }
+        params.put("fileName", fileName);
+        params.put("data", fileData);
+        String url = String.format("%s%s", config.getAddress(), UrlFactory.ObjectUrl.upload_byte.getUrl());
+        StringMap header = auth.authorization(url);
+        Response response = client.postComplex(url, params, header);
+        Result result = response.jsonToObject(Result.class);
+        if (result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
+            return Json.decode(Json.encode(result.getData()), ObjectInfo.class);
+        }
+        logger.error("request error, code:{}, msg:{}", result.getCode(), result.getMsg());
+        return null;
     }
 
     /**
@@ -43,12 +77,12 @@ public final class ObjectManage {
      * @param bucket   bucket name
      * @param acl      对象acl
      * @param filePath 对象存储路径
-     * @param file     文件
+     * @param files    文件
      */
-    public Boolean upload(String bucket, String acl, @Nullable String filePath, File file) {
+    public JSONArray upload(String bucket, String acl, @Nullable String filePath, File[] files) {
         // 验证acl 规范
         if (!Constants.AclType.ALL_NAME.contains(acl)) {
-            throw new IllegalArgumentException("illegal acl, enum [PRIVATE, PUBLIC_READ, PUBLIC_READ_WRITE]");
+            throw new IllegalArgumentException("illegal acl, enum [" + Constants.AclType.ALL_NAME + "]");
         }
         StringMap fields = new StringMap();
         fields.put("bucket", bucket);
@@ -56,16 +90,40 @@ public final class ObjectManage {
         if (StringUtils.isNotBlank(filePath)) {
             fields.put("filePath", filePath);
         }
-        String url = String.format("%s%s", config.defaultHost(), UrlFactory.ObjectUrl.create.getUrl());
+        String url = String.format("%s%s", config.getAddress(), UrlFactory.ObjectUrl.create.getUrl());
 
         StringMap header = auth.authorization(url);
-        Response response = HttpClient.multipartPost(url, fields, "file", "demo.png", file, Constants.MULTIPART_MIME, header);
+        Response response = client.multipartPost(url, fields, "file", files, header);
         Result result = response.jsonToObject(Result.class);
         if (result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
-            return true;
+            return JSON.parseArray(JSON.toJSONString(result.getData()));
         }
         logger.error("request error, code:{}, msg:{}", result.getCode(), result.getMsg());
-        return false;
+        return null;
+    }
+
+    public ObjectInfo upload(String bucket, String acl, @Nullable String filePath, String fileName, String base64Data) {
+        // 验证acl 规范
+        if (!Constants.AclType.ALL_NAME.contains(acl)) {
+            throw new IllegalArgumentException("illegal acl, enum [" + Constants.AclType.ALL_NAME + "]");
+        }
+        StringMap params = new StringMap();
+        params.put("bucket", bucket);
+        params.put("acl", acl);
+        if (StringUtils.isNotBlank(filePath)) {
+            params.put("filePath", filePath);
+        }
+        params.put("fileName", fileName);
+        params.put("data", base64Data);
+        String url = String.format("%s%s", config.getAddress(), UrlFactory.ObjectUrl.upload_base64.getUrl());
+        StringMap header = auth.authorization(url);
+        Response response = client.postComplex(url, params, header);
+        Result result = response.jsonToObject(Result.class);
+        if (result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
+            return Json.decode(Json.encode(result.getData()), ObjectInfo.class);
+        }
+        logger.error("request error, code:{}, msg:{}", result.getCode(), result.getMsg());
+        return null;
     }
 
     /**
@@ -79,9 +137,10 @@ public final class ObjectManage {
         if (fullObjectPath.startsWith("/")) {
             throw new IllegalArgumentException("object full path not allow start with / ");
         }
-        String url = String.format(config.defaultHost() + UrlFactory.ObjectUrl.get_object.getUrl(), bucket, fullObjectPath);
+        String url = String.format(config.getAddress() + UrlFactory.ObjectUrl.get_object.getUrl(), bucket, fullObjectPath);
         Response response = get(url);
-        if (response.isSuccessful() && response.getContentType().equals(Constants.DEFAULT_MIME)) {
+        System.out.println(response.getContentType());
+        if (response.isSuccessful() && response.getContentType().startsWith(Constants.DEFAULT_MIME)) {
             return response.getBody();
         }
         logger.error(response.bodyString());
@@ -106,7 +165,7 @@ public final class ObjectManage {
         StringMap params = new StringMap();
         params.put("bucket", bucket);
         params.put("folder", folder);
-        String url = String.format("%s%s", config.defaultHost(), UrlFactory.ObjectUrl.create_folder.getUrl());
+        String url = String.format("%s%s", config.getAddress(), UrlFactory.ObjectUrl.create_folder.getUrl());
         Response response = post(url, params);
         Result result = response.jsonToObject(Result.class);
         return result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG);
@@ -116,17 +175,21 @@ public final class ObjectManage {
      * 删除对象或目录
      *
      * @param bucket  存储空间名
-     * @param objects 对象或目录全路径 如 /a/b/c.jpg 或 /a/c
+     * @param objectIds 对象id,多个用 英文逗号隔开
      * @return 成功与否
      */
-    public boolean removeObjectOrFolder(String bucket, String objects) {
+    public boolean removeObjectOrFolder(String bucket, String objectIds) {
         StringMap params = new StringMap();
         params.put("bucket", bucket);
-        params.put("objects", objects);
-        String url = String.format("%s%s", config.defaultHost(), UrlFactory.ObjectUrl.delete_objects.getUrl());
+        params.put("objectIds", objectIds);
+        String url = String.format("%s%s", config.getAddress(), UrlFactory.ObjectUrl.delete_objects.getUrl());
         Response response = post(url, params);
         Result result = response.jsonToObject(Result.class);
-        return result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG);
+        if (!result.getCode().equals(Constants.API_SUCCESS_CODE) || !result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
+            logger.error(JSON.toJSONString(result));
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -145,11 +208,11 @@ public final class ObjectManage {
         params.put("bucket", bucket);
         params.put("objectPath", objectPath);
         params.put("timeout", timeout);
-        String url = String.format("%s%s", config.defaultHost(), UrlFactory.ObjectUrl.generate_url_with_signed.getUrl());
+        String url = String.format("%s%s", config.getAddress(), UrlFactory.ObjectUrl.generate_url_with_signed.getUrl());
         Response response = post(url, params);
         Result result = response.jsonToObject(Result.class);
         if (result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
-            GenerateUrlWithSignedVo vo = new Gson().fromJson(Json.encode(result.getData()), GenerateUrlWithSignedVo.class);
+            GenerateUrlWithSigned vo = new Gson().fromJson(Json.encode(result.getData()), GenerateUrlWithSigned.class);
             return vo.getUrl() + "?" + vo.getSignature();
         }
         logger.error("request error, code:{}, msg:{}", result.getCode(), result.getMsg());
@@ -157,14 +220,16 @@ public final class ObjectManage {
     }
 
     private Response get(String url) {
+        logger.debug("request url:" + url);
         StringMap header = auth.authorization(url);
-        System.out.println(Json.encode(header));
-        return HttpClient.get(url, header);
+        System.out.println("header:" + Json.encode(header));
+        return client.get(url, header);
     }
 
     private Response post(String url, StringMap params) {
         logger.debug("request url:" + url);
         StringMap header = auth.authorization(url);
-        return HttpClient.post(url, params.jsonString(), header);
+        System.out.println("header:" + Json.encode(header));
+        return client.post(url, params.jsonString(), header);
     }
 }

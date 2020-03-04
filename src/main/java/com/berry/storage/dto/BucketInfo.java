@@ -11,7 +11,7 @@ import lombok.Data;
  * @date 2019/6/14 15:41
  */
 @Data
-public class BucketInfoVo {
+public class BucketInfo {
     /**
      * Bucket名称
      */

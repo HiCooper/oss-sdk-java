@@ -90,7 +90,7 @@ public class Response {
     }
 
     public boolean isJson() {
-        return this.contentType.equals(Constants.JSON_MIME);
+        return StringUtils.isNotBlank(this.contentType) && this.contentType.startsWith(Constants.JSON_MIME);
     }
 
     public int getCode() {

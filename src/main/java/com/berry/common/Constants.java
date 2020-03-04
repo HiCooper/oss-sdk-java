@@ -1,8 +1,8 @@
 package com.berry.common;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.regex.Pattern;
 
 /**
  * Application constants.
@@ -34,9 +34,6 @@ public final class Constants {
      */
     public static final String VERSION = "1.0.0";
 
-//    public static final String DEFAULT_HOST = "47.101.42.169:8077";
-    public static final String DEFAULT_HOST = "192.168.2.207:8077";
-
     /**
      * json
      */
@@ -56,7 +53,7 @@ public final class Constants {
     /**
      * 所有都是UTF-8编码
      */
-    public static final Charset UTF_8 = Charset.forName("UTF-8");
+    public static final Charset UTF_8 = StandardCharsets.UTF_8;
 
     public enum AclType {
         /**

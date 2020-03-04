@@ -7,7 +7,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.berry.common.Constants;
 import com.berry.http.HttpClient;
 import com.berry.http.Response;
-import com.berry.storage.dto.BucketInfoVo;
+import com.berry.storage.dto.BucketInfo;
 import com.berry.storage.dto.Result;
 import com.berry.storage.url.UrlFactory;
 import com.berry.util.Auth;
@@ -34,10 +34,13 @@ public final class BucketManage {
     private static final Logger logger = LoggerFactory.getLogger(BucketManage.class);
 
     private final Auth auth;
-    private final Config config = new Config();
+    private final Config config;
+    private final HttpClient client;
 
-    public BucketManage(Auth auth) {
+    public BucketManage(Auth auth, Config config) {
         this.auth = auth;
+        this.config = config;
+        this.client = new HttpClient(config.getUploadTimeout());
     }
 
     /**
@@ -46,8 +49,8 @@ public final class BucketManage {
      * @param bucketName bucketName 可空
      * @return 列表
      */
-    public List<BucketInfoVo> queryBucket(@Nullable String bucketName) {
-        String url = String.format("%s%s", config.defaultHost(), UrlFactory.BucketUr.list.getUrl());
+    public List<BucketInfo> queryBucket(@Nullable String bucketName) {
+        String url = String.format("%s%s", config.getAddress(), UrlFactory.BucketUr.list.getUrl());
         StringMap params = new StringMap();
         params.putNotNull("name", bucketName);
         Response response = get(url, params.size() > 1 ? params : null);
@@ -57,12 +60,12 @@ public final class BucketManage {
                 logger.error(result == null ? "empty result" : result.getMsg());
                 return null;
             }
-            List<BucketInfoVo> vos = new ArrayList<>();
+            List<BucketInfo> vos = new ArrayList<>();
             JSONArray array = JSONArray.parseArray(JSON.toJSONString(result.getData()));
-            BucketInfoVo vo;
+            BucketInfo vo;
             for (int i = 0; i < array.size(); i++) {
                 JSONObject o = array.getJSONObject(i);
-                vo = Json.decode(JSON.toJSONString(o), BucketInfoVo.class);
+                vo = Json.decode(JSON.toJSONString(o), BucketInfo.class);
                 vos.add(vo);
             }
             return vos;
@@ -97,7 +100,7 @@ public final class BucketManage {
             }
             params.put("acl", acl);
         }
-        String url = String.format("%s%s", config.defaultHost(), UrlFactory.BucketUr.new_create_bucket.getUrl());
+        String url = String.format("%s%s", config.getAddress(), UrlFactory.BucketUr.new_create_bucket.getUrl());
         return getResult(url, params);
     }
 
@@ -112,7 +115,7 @@ public final class BucketManage {
         if (StringUtils.isAnyBlank(bucket, acl)) {
             throw new IllegalArgumentException("bucket and acl cannot be blank!");
         }
-        String url = String.format("%s%s", config.defaultHost(), UrlFactory.BucketUr.set_acl.getUrl());
+        String url = String.format("%s%s", config.getAddress(), UrlFactory.BucketUr.set_acl.getUrl());
         StringMap params = new StringMap();
         params.put("bucket", bucket);
         params.put("acl", acl);
@@ -129,7 +132,7 @@ public final class BucketManage {
         if (StringUtils.isBlank(bucket)) {
             throw new IllegalArgumentException("bucket cannot be blank!");
         }
-        String url = String.format("%s%s", config.defaultHost(), UrlFactory.BucketUr.delete_bucket.getUrl());
+        String url = String.format("%s%s", config.getAddress(), UrlFactory.BucketUr.delete_bucket.getUrl());
         StringMap params = new StringMap();
         params.put("bucket", bucket);
         return getResult(url, params);
@@ -154,13 +157,13 @@ public final class BucketManage {
 
     private Response get(String url, StringMap params) {
         StringMap header = auth.authorization(url);
-        return HttpClient.get(url, params, header);
+        return client.get(url, params, header);
     }
 
     private Response post(String url, StringMap params) {
         System.out.println("request url:" + url);
         StringMap header = auth.authorization(url);
         System.out.println(header.jsonString());
-        return HttpClient.post(url, params.jsonString(), header);
+        return client.post(url, params.jsonString(), header);
     }
 }
