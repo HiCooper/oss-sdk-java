@@ -95,7 +95,9 @@ public final class ObjectManage {
         StringMap header = auth.authorization(url);
         Response response = client.multipartPost(url, fields, "file", files, header);
         Result result = response.jsonToObject(Result.class);
-        if (result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
+        if (result.getCode().equals(Constants.API_SUCCESS_CODE)
+                && result.getMsg().equals(Constants.API_SUCCESS_MSG)
+                && result.getData() != null) {
             return JSON.parseArray(JSON.toJSONString(result.getData()));
         }
         logger.error("request error, code:{}, msg:{}", result.getCode(), result.getMsg());
@@ -119,7 +121,9 @@ public final class ObjectManage {
         StringMap header = auth.authorization(url);
         Response response = client.postComplex(url, params, header);
         Result result = response.jsonToObject(Result.class);
-        if (result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
+        if (result.getCode().equals(Constants.API_SUCCESS_CODE)
+                && result.getMsg().equals(Constants.API_SUCCESS_MSG)
+                && result.getData() != null) {
             return Json.decode(Json.encode(result.getData()), ObjectInfo.class);
         }
         logger.error("request error, code:{}, msg:{}", result.getCode(), result.getMsg());
@@ -139,7 +143,6 @@ public final class ObjectManage {
         }
         String url = String.format(config.getAddress() + UrlFactory.ObjectUrl.get_object.getUrl(), bucket, fullObjectPath);
         Response response = get(url);
-        System.out.println(response.getContentType());
         if (response.isSuccessful() && response.getContentType().startsWith(Constants.DEFAULT_MIME)) {
             return response.getBody();
         }
@@ -174,7 +177,7 @@ public final class ObjectManage {
     /**
      * 删除对象或目录
      *
-     * @param bucket  存储空间名
+     * @param bucket    存储空间名
      * @param objectIds 对象id,多个用 英文逗号隔开
      * @return 成功与否
      */
@@ -222,14 +225,12 @@ public final class ObjectManage {
     private Response get(String url) {
         logger.debug("request url:" + url);
         StringMap header = auth.authorization(url);
-        System.out.println("header:" + Json.encode(header));
         return client.get(url, header);
     }
 
     private Response post(String url, StringMap params) {
         logger.debug("request url:" + url);
         StringMap header = auth.authorization(url);
-        System.out.println("header:" + Json.encode(header));
         return client.post(url, params.jsonString(), header);
     }
 }
