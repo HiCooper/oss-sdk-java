@@ -80,7 +80,7 @@ public final class ObjectManage {
      * @param filePath 对象存储路径
      * @param files    文件
      */
-    public JSONArray upload(String bucket, String acl, @Nullable String filePath, File[] files) throws OssException {
+    public JSONArray upload(String bucket, String acl, @Nullable String filePath, File files) throws OssException {
         // 验证acl 规范
         if (!Constants.AclType.ALL_NAME.contains(acl)) {
             throw new IllegalArgumentException("illegal acl, enum [" + Constants.AclType.ALL_NAME + "]");

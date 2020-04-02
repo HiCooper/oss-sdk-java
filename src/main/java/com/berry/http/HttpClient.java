@@ -209,11 +209,10 @@ public class HttpClient {
     public Response multipartPost(String url,
                                   StringMap fields,
                                   String name,
-                                  String fileName,
                                   File fileBody,
                                   StringMap headers) throws OssException {
         RequestBody file = RequestBody.create(MediaType.parse(Constants.MULTIPART_MIME), fileBody);
-        Request.Builder requestBuilder = getBuilder(url, fields, name, fileName, file);
+        Request.Builder requestBuilder = getBuilder(url, fields, name, fileBody.getName(), file);
         return send(requestBuilder, headers);
     }
 
@@ -349,7 +348,7 @@ public class HttpClient {
                 response.close();
                 logger.error("request fail,stateCode:{}, msg:{}", code, msg);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new OssException(e.getMessage());
         }
         return Response.create(response, null);
