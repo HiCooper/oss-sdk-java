@@ -184,13 +184,13 @@ public class HttpClient {
      */
     public Response multipartPost(String url,
                                   StringMap fields,
-                                  String name,
+                                  String field,
                                   File[] files,
                                   StringMap headers) throws OssException {
         final MultipartBody.Builder mb = new MultipartBody.Builder();
         for (File file : files) {
             RequestBody fileBody = RequestBody.create(MediaType.parse(Constants.MULTIPART_MIME), file);
-            mb.addFormDataPart(name, file.getName(), fileBody);
+            mb.addFormDataPart(field, file.getName(), fileBody);
         }
         if (fields != null) {
             for (Map.Entry<String, Object> entry : fields.entrySet()) {
@@ -208,11 +208,11 @@ public class HttpClient {
      */
     public Response multipartPost(String url,
                                   StringMap fields,
-                                  String name,
+                                  String fileField,
                                   File fileBody,
                                   StringMap headers) throws OssException {
         RequestBody file = RequestBody.create(MediaType.parse(Constants.MULTIPART_MIME), fileBody);
-        Request.Builder requestBuilder = getBuilder(url, fields, name, fileBody.getName(), file);
+        Request.Builder requestBuilder = getBuilder(url, fields, fileField, fileBody.getName(), file);
         return send(requestBuilder, headers);
     }
 
@@ -302,18 +302,18 @@ public class HttpClient {
 
 
     /**
-     * 后去文件上传类型 build
+     * 获取文件上传 builder
      *
-     * @param url      地址
-     * @param fields   字段信息 data part
-     * @param name     文件接受字段名
-     * @param fileName 文件名 可为空
-     * @param file     已包装的文件请求体
+     * @param url       地址
+     * @param fields    字段信息 data part
+     * @param fileField 文件接受字段名
+     * @param fileName  文件名 可为空
+     * @param file      已包装的文件请求体
      * @return builder
      */
-    private static Request.Builder getBuilder(String url, StringMap fields, String name, @Nullable String fileName, RequestBody file) {
+    private static Request.Builder getBuilder(String url, StringMap fields, String fileField, @Nullable String fileName, RequestBody file) {
         final MultipartBody.Builder mb = new MultipartBody.Builder();
-        mb.addFormDataPart(name, fileName, file);
+        mb.addFormDataPart(fileField, fileName, file);
         if (fields != null) {
             for (Map.Entry<String, Object> entry : fields.entrySet()) {
                 mb.addFormDataPart(entry.getKey(), entry.getValue().toString());
