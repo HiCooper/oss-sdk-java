@@ -25,7 +25,7 @@ public final class Auth {
     private static final String ENCODE_JSON_DEADLINE_KEY = "deadline";
 
     private static final String MAC_ALGORITHM = "HmacSHA1";
-    private static final String OSS_SDK_AUTH_HEAD_NAME = "oss_sdk_authorization";
+    public static final String OSS_SDK_AUTH_HEAD_NAME = "oss_sdk_authorization";
     private static final String SDK_REQUEST_TOKEN_PREFIX = "OSS-";
 
     private final String accessKeyId;
@@ -48,6 +48,10 @@ public final class Auth {
     public StringMap authorization(String url) {
         String authorization = SDK_REQUEST_TOKEN_PREFIX + signRequest(url);
         return new StringMap().put(OSS_SDK_AUTH_HEAD_NAME, authorization);
+    }
+
+    public String getSign(String url) {
+        return SDK_REQUEST_TOKEN_PREFIX + signRequest(url);
     }
 
     /**
