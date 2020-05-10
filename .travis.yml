@@ -17,3 +17,4 @@ cache:
 
 script:
   - echo "skipping tests"
+  - gradle build -x test
