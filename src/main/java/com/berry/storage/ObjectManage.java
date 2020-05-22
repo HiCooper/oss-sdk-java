@@ -14,13 +14,14 @@ import com.berry.storage.url.UrlFactory;
 import com.berry.util.Auth;
 import com.berry.util.Json;
 import com.berry.util.StringMap;
-import com.berry.util.StringUtils;
 import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.io.File;
+
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
  * Created with IntelliJ IDEA.
@@ -34,9 +35,12 @@ public final class ObjectManage {
 
     private static final Logger logger = LoggerFactory.getLogger(ObjectManage.class);
 
+    private final String errorIMsgTemp = "request fail,stateCode:{}, msg:{}";
+
+    private static final String illegalAclMsg = "illegal acl, enum [" + Constants.AclType.ALL_NAME + "]";
+
     private final Auth auth;
     private final Config config;
-
     private final HttpClient client;
 
     public ObjectManage(Auth auth, Config config) {
@@ -51,12 +55,12 @@ public final class ObjectManage {
     public ObjectInfo upload(String bucket, String acl, @Nullable String filePath, String fileName, byte[] fileData) throws OssException {
         // 验证acl 规范
         if (!Constants.AclType.ALL_NAME.contains(acl)) {
-            throw new IllegalArgumentException("illegal acl, enum [" + Constants.AclType.ALL_NAME + "]");
+            throw new IllegalArgumentException(illegalAclMsg);
         }
         StringMap params = new StringMap();
         params.put("bucket", bucket);
         params.put("acl", acl);
-        if (StringUtils.isNotBlank(filePath)) {
+        if (isNotBlank(filePath)) {
             params.put("filePath", filePath);
         }
         params.put("fileName", fileName);
@@ -68,7 +72,7 @@ public final class ObjectManage {
         if (result.getCode().equals(Constants.API_SUCCESS_CODE) && result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
             return Json.decode(Json.encode(result.getData()), ObjectInfo.class);
         }
-        logger.error("request fail,stateCode:{}, msg:{}", result.getCode(), result.getMsg());
+        logger.error(errorIMsgTemp, result.getCode(), result.getMsg());
         throw new OssException(result.getMsg());
     }
 
@@ -96,12 +100,12 @@ public final class ObjectManage {
     public JSONArray upload(String bucket, String acl, @Nullable String filePath, File[] files) throws OssException {
         // 验证acl 规范
         if (!Constants.AclType.ALL_NAME.contains(acl)) {
-            throw new IllegalArgumentException("illegal acl, enum [" + Constants.AclType.ALL_NAME + "]");
+            throw new IllegalArgumentException(illegalAclMsg);
         }
         StringMap fields = new StringMap();
         fields.put("bucket", bucket);
         fields.put("acl", acl);
-        if (StringUtils.isNotBlank(filePath)) {
+        if (isNotBlank(filePath)) {
             fields.put("filePath", filePath);
         }
         String url = String.format("%s%s", config.getAddress(), UrlFactory.ObjectUrl.create.getUrl());
@@ -114,19 +118,19 @@ public final class ObjectManage {
                 && result.getData() != null) {
             return JSON.parseArray(JSON.toJSONString(result.getData()));
         }
-        logger.error("request fail,stateCode:{}, msg:{}", result.getCode(), result.getMsg());
+        logger.error(errorIMsgTemp, result.getCode(), result.getMsg());
         throw new OssException(result.getMsg());
     }
 
     public ObjectInfo upload(String bucket, String acl, @Nullable String filePath, String fileName, String base64Data) throws OssException {
         // 验证acl 规范
         if (!Constants.AclType.ALL_NAME.contains(acl)) {
-            throw new IllegalArgumentException("illegal acl, enum [" + Constants.AclType.ALL_NAME + "]");
+            throw new IllegalArgumentException(illegalAclMsg);
         }
         StringMap params = new StringMap();
         params.put("bucket", bucket);
         params.put("acl", acl);
-        if (StringUtils.isNotBlank(filePath)) {
+        if (isNotBlank(filePath)) {
             params.put("filePath", filePath);
         }
         params.put("fileName", fileName);
@@ -140,7 +144,7 @@ public final class ObjectManage {
                 && result.getData() != null) {
             return Json.decode(Json.encode(result.getData()), ObjectInfo.class);
         }
-        logger.error("request fail,stateCode:{}, msg:{}", result.getCode(), result.getMsg());
+        logger.error(errorIMsgTemp, result.getCode(), result.getMsg());
         throw new OssException(result.getMsg());
     }
 
@@ -161,7 +165,7 @@ public final class ObjectManage {
             return response.getBody();
         }
         Result result = response.jsonToObject(Result.class);
-        logger.error("request fail,stateCode:{}, msg:{}", result.getCode(), result.getMsg());
+        logger.error(errorIMsgTemp, result.getCode(), result.getMsg());
         throw new OssException(result.getMsg());
     }
 
@@ -251,20 +255,20 @@ public final class ObjectManage {
             GenerateUrlWithSigned vo = new Gson().fromJson(Json.encode(result.getData()), GenerateUrlWithSigned.class);
             return vo.getUrl() + "?" + vo.getSignature();
         }
-        logger.error("request fail,stateCode:{}, msg:{}", result.getCode(), result.getMsg());
+        logger.error(errorIMsgTemp, result.getCode(), result.getMsg());
         throw new OssException(result.getMsg());
     }
 
     private Response get(String url) throws OssException {
         StringMap header = auth.authorization(url);
-        logger.debug("request url:{}, header:{}", url, Json.encode(header));
+        logger.debug("request url:{}, header:{}", url, header.map());
         String withTokenUrl = url + "?token=" + header.get(Auth.OSS_SDK_AUTH_HEAD_NAME);
         return client.get(withTokenUrl, header);
     }
 
     private Response post(String url, StringMap params) throws OssException {
         StringMap header = auth.authorization(url);
-        logger.debug("request url:{}, header:{}", url, Json.encode(header));
+        logger.debug("request url:{}, header:{}", url, header.map());
         return client.post(url, params.jsonString(), header);
     }
 }

@@ -14,7 +14,6 @@ import com.berry.storage.url.UrlFactory;
 import com.berry.util.Auth;
 import com.berry.util.Json;
 import com.berry.util.StringMap;
-import com.berry.util.StringUtils;
 import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +21,8 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.apache.commons.lang3.StringUtils.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -59,7 +60,8 @@ public final class BucketManage {
         if (response.isSuccessful()) {
             Result result = response.jsonToObject(Result.class);
             if (result == null || !result.getCode().equals(Constants.API_SUCCESS_CODE) || !result.getMsg().equals(Constants.API_SUCCESS_MSG)) {
-                logger.error(result == null ? "empty result" : result.getMsg());
+                String msg = result == null ? "empty result" : result.getMsg();
+                logger.error(msg);
                 return Lists.newArrayList();
             }
             List<BucketInfo> vos = new ArrayList<>();
@@ -85,7 +87,7 @@ public final class BucketManage {
      * @return true or false
      */
     public Boolean createBucket(String name, String region, @Nullable String acl) throws OssException {
-        if (StringUtils.isAnyBlank(name, region)) {
+        if (isAnyBlank(name, region)) {
             throw new IllegalArgumentException("name and region cannot be blank!");
         }
         if (!name.matches(Constants.BUCKET_NAME_PATTERN)) {
@@ -94,7 +96,7 @@ public final class BucketManage {
         StringMap params = new StringMap();
         params.put("name", name);
         params.put("region", region);
-        if (StringUtils.isNotBlank(acl)) {
+        if (isNotBlank(acl)) {
             // 验证acl 规范
             if (!Constants.AclType.ALL_NAME.contains(acl)) {
                 throw new IllegalArgumentException("illegal acl enum [PRIVATE, PUBLIC_READ, PUBLIC_READ_WRITE]");
@@ -113,7 +115,7 @@ public final class BucketManage {
      * @return true or false
      */
     public Boolean updateAcl(String bucket, String acl) throws OssException {
-        if (StringUtils.isAnyBlank(bucket, acl)) {
+        if (isAnyBlank(bucket, acl)) {
             throw new IllegalArgumentException("bucket and acl cannot be blank!");
         }
         String url = String.format("%s%s", config.getAddress(), UrlFactory.BucketUr.set_acl.getUrl());
@@ -130,7 +132,7 @@ public final class BucketManage {
      * @return true or false
      */
     public Boolean delete(String bucket) throws OssException {
-        if (StringUtils.isBlank(bucket)) {
+        if (isBlank(bucket)) {
             throw new IllegalArgumentException("bucket cannot be blank!");
         }
         String url = String.format("%s%s", config.getAddress(), UrlFactory.BucketUr.delete_bucket.getUrl());

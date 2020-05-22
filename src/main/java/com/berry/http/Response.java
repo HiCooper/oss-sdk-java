@@ -10,6 +10,9 @@ import okhttp3.ResponseBody;
 import javax.annotation.Nullable;
 import java.io.IOException;
 
+import static org.apache.commons.lang3.StringUtils.isNoneBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 /**
  * Created with IntelliJ IDEA.
  *
@@ -39,7 +42,7 @@ public class Response {
     }
 
     static Response create(okhttp3.Response response, @Nullable String errorMsg) {
-        if (response == null || StringUtils.isNoneBlank(errorMsg)) {
+        if (response == null || isNoneBlank(errorMsg)) {
             return new Response(-1, null, null, null, null, null, errorMsg);
         }
         ResponseBody body = response.body();
@@ -90,7 +93,7 @@ public class Response {
     }
 
     public boolean isJson() {
-        return StringUtils.isNotBlank(this.contentType) && this.contentType.startsWith(Constants.JSON_MIME);
+        return isNotBlank(this.contentType) && this.contentType.startsWith(Constants.JSON_MIME);
     }
 
     public int getCode() {

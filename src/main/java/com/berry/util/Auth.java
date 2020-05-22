@@ -5,13 +5,15 @@ import javax.crypto.spec.SecretKeySpec;
 import java.net.URI;
 import java.security.GeneralSecurityException;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 /**
  * Created with IntelliJ IDEA.
  *
  * @author Berry_Cooper.
  * @date 2019-06-29 11:03
  * fileName：Auth
- * Use：
+ * Use：提供签名授权
  */
 public final class Auth {
 
@@ -37,7 +39,7 @@ public final class Auth {
     }
 
     public static Auth create(String accessKeyId, String accessKeySecret) {
-        if (StringUtils.isBlank(accessKeyId) || StringUtils.isBlank(accessKeySecret)) {
+        if (isBlank(accessKeyId) || isBlank(accessKeySecret)) {
             throw new IllegalArgumentException("empty key");
         }
         byte[] sk = StringUtils.utf8Bytes(accessKeySecret);

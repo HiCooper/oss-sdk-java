@@ -4,7 +4,6 @@ package com.berry.util;
 import com.berry.common.Constants;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -21,11 +20,11 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils {
      */
     public static String parseUrlParams(StringMap paramsMap) {
         List<Map.Entry<String, Object>> infoIds = new ArrayList<>(paramsMap.entrySet());
-        infoIds.sort(Comparator.comparing(Map.Entry::getKey));
+        infoIds.sort(Map.Entry.comparingByKey());
         // 构造URL 键值对的格式
         StringBuilder buf = new StringBuilder();
         for (Map.Entry<String, Object> item : infoIds) {
-            if (StringUtils.isNotBlank(item.getKey()) && item.getValue() != null) {
+            if (isNotBlank(item.getKey()) && item.getValue() != null) {
                 String key = item.getKey();
                 String val = item.getValue().toString();
                 buf.append(key).append("=").append(val);

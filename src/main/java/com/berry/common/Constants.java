@@ -45,9 +45,9 @@ public final class Constants {
 
     public static final String DEFAULT_MIME = "application/octet-stream";
 
-    public static final String  API_SUCCESS_CODE = "200";
+    public static final String API_SUCCESS_CODE = "200";
 
-    public static final String  API_SUCCESS_MSG = "SUCCESS";
+    public static final String API_SUCCESS_MSG = "SUCCESS";
 
 
     /**
